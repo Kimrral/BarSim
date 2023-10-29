@@ -10,6 +10,7 @@
   <component name="ChangeListManager">
     <list default="true" id="1c888e18-d659-4b33-83f4-437f5be1f042" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BarSim/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BarSim/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BarSim/Private/CustomerFSM.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BarSim/Private/CustomerFSM.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -234,7 +235,7 @@
       <workItem from="1698282082491" duration="6902000" />
       <workItem from="1698294577504" duration="3388000" />
       <workItem from="1698406391838" duration="1909000" />
-      <workItem from="1698580145986" duration="1692000" />
+      <workItem from="1698580145986" duration="3749000" />
     </task>
     <servers />
   </component>

@@ -313,10 +313,10 @@ void UCustomerFSM::TickStandby()
 		SetSitState(ECustomerSitState::ORDER);
 	}
 	// 일정 시간 이후에 코스터가 없다면 웨이트롱으로 상태 변경
-	else if(curTime > 10 && spawnManager->bIsCoaster[idx] != true)
+	/*else if(curTime > 10 && spawnManager->bIsCoaster[idx] != true)
 	{
 		SetSitState(ECustomerSitState::STANDBYWAITLONG);
-	}
+	}*/
 }
 
 void UCustomerFSM::TickStandbyWaitLong()
