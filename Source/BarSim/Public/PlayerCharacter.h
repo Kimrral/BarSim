@@ -371,4 +371,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AGuideWidgetActor> guideFactory;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AGuideWidgetActor> guideFactoryEng;
 };

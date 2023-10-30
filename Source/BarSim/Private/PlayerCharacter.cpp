@@ -1672,7 +1672,18 @@ void APlayerCharacter::ShowGuideWidget()
 	FVector loc1 = VRReplicatedCamera->GetComponentLocation() + VRReplicatedCamera->GetForwardVector() * 150;
 	FVector loc2 = GetActorLocation() + GetActorUpVector() * 130;
 	FVector loc = {loc1.X, loc1.Y, loc2.Z};
-	GuideWidget = GetWorld()->SpawnActor<AGuideWidgetActor>(guideFactory, loc, rot);
+	if(BarGameInstance)
+	{
+		if(BarGameInstance->bEnglish==false)
+		{
+			GuideWidget = GetWorld()->SpawnActor<AGuideWidgetActor>(guideFactory, loc, rot);
+		}
+		else
+		{
+			GuideWidget = GetWorld()->SpawnActor<AGuideWidgetActor>(guideFactoryEng, loc, rot);
+		}
+	}
+
 }
 
 void APlayerCharacter::HideGuideWidget()
