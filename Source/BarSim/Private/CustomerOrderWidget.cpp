@@ -605,7 +605,7 @@ void UCustomerOrderWidget::SetLanguage()
 			womanScriptA.Emplace(FString::Printf(TEXT("Not this... I ordered Martini"))); // 6
 			womanScriptA.Emplace(FString::Printf(TEXT("Not this... I ordered Negroni"))); // 7
 			// 두번
-			womanScriptA.Emplace(FString::Printf(TEXT("You can't even make the menu that I ordered properly?"))); // 8
+			womanScriptA.Emplace(FString::Printf(TEXT("You can't even make the ordered menu?"))); // 8
 			womanScriptA.Emplace(FString::Printf(TEXT("It's good. It's perfect!"))); // 9
 			womanScriptA.Emplace(FString::Printf(TEXT("Something's not right..."))); // 10
 	
@@ -669,7 +669,7 @@ void UCustomerOrderWidget::SetLanguage()
 			manScriptA.Emplace(FString::Printf(TEXT("I don't think it's Martini I ordered?"))); // 6
 			manScriptA.Emplace(FString::Printf(TEXT("I don't think it's Negroni I ordered?"))); // 7
 			// 두번
-			manScriptA.Emplace(FString::Printf(TEXT("I can't stand that you didn't give me what I ordered."))); // 8
+			manScriptA.Emplace(FString::Printf(TEXT("You didn't give me what I ordered."))); // 8
 			manScriptA.Emplace(FString::Printf(TEXT("It's good. I enjoyed the drink."))); // 9
 			manScriptA.Emplace(FString::Printf(TEXT("Well, it's not the taste I knew."))); // 10
 	
