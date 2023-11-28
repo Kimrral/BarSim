@@ -57,8 +57,8 @@ void UMenuWidget::NativeConstruct()
 	btn_LanguageCheckNo->OnPressed.AddDynamic(this, &UMenuWidget::LangCheckNo);
 	// 핸드 리셋 바인드
 	btn_ResetHands->OnPressed.AddDynamic(this, &UMenuWidget::ChoiceResetHand);
-	btn_HandResetCheckYes->OnPressed.AddDynamic(this, &UMenuWidget::LangCheckNo);
-	btn_HandResetCheckNo->OnPressed.AddDynamic(this, &UMenuWidget::LangCheckNo);
+	btn_HandResetCheckYes->OnPressed.AddDynamic(this, &UMenuWidget::HandResetYes);
+	btn_HandResetCheckNo->OnPressed.AddDynamic(this, &UMenuWidget::HandResetNo);
 }
 
 void UMenuWidget::StoryStart()
@@ -648,7 +648,7 @@ void UMenuWidget::HandResetYes()
 {
 	if(gi)
 	{
-		//gi->resetHandDele.Broadcast();
+		gi->resetHandDele.Broadcast();
 	}
 
 	ResumeGame();

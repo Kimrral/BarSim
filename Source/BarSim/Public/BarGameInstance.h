@@ -7,7 +7,7 @@
 #include "BarGameInstance.generated.h"
 
 DECLARE_DELEGATE(FGoMainDele);
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FResetHandDele);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FResetHandDele);
 
 /**
  * 
@@ -21,7 +21,7 @@ public:
 	virtual void Init() override;
 	
 	FGoMainDele goToMainMapDele;
-	//FResetHandDele resetHandDele;
+	FResetHandDele resetHandDele;
 
 	UPROPERTY()
 	class AGameStartManager* startManager;

@@ -56,7 +56,7 @@ void AGraspingHandRealisticLeft::BeginPlay()
 
 	if(BarGameInstance)
 	{
-		//BarGameInstance->resetHandDele.AddDynamic(this, &AGraspingHandRealisticLeft::RespawnGraspingHands);
+		BarGameInstance->resetHandDele.AddDynamic(this, &AGraspingHandRealisticLeft::RespawnGraspingHands);
 	}
 }
 

@@ -18,7 +18,7 @@ void UBarGameInstance::Init()
 	//델리게이트 연결 함수 실행
 	BindFunction();
 
-	//resetHandDele.AddDynamic(this, &UBarGameInstance::ResetHandBroadcast);
+	resetHandDele.AddDynamic(this, &UBarGameInstance::ResetHandBroadcast);
 
 	
 }
@@ -45,7 +45,7 @@ void UBarGameInstance::BindFunction()
 
 void UBarGameInstance::ResetHandBroadcast()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Reset Hand GI"))
+	
 }
 
 void UBarGameInstance::AddMoney(float money)
