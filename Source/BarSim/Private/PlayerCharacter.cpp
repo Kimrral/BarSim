@@ -886,6 +886,413 @@ void APlayerCharacter::CheckDroppedObjectLeft()
 
 }
 
+void APlayerCharacter::DestroyDroppedObjectRight()
+{
+	// 오른손에 Tongs를 잡고 있었다면
+	if(isGrabbingTongsRight)
+	{
+		huchuTong->isDropSoundEnabled=true;
+		// Tongs에 잡혀 있는 대상이 있었다면
+		if(isGrabbingWithTongsRight)
+		{
+			FLatentActionInfo LatentInfo;
+			LatentInfo.CallbackTarget = this;
+			auto tongCompRef = huchuTong->tongRight;
+			UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-5, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
+			isTongsTickEnabled = true;
+			// 1. 잡지않은 상태로 전환
+			isGrabbingWithTongsRight = false;
+			// 2. 손에서 떼어내기
+			GrabbedObjectWithTongsRight->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+			// 3. 물리기능 활성화
+			GrabbedObjectWithTongsRight->SetSimulatePhysics(true);
+			// 4. 충돌기능 활성화
+			GrabbedObjectWithTongsRight->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			GrabbedObjectWithTongsRight = nullptr;
+		}
+		huchuTong->SetSimulateAndTickDisable();
+		isGrabbingTongsRight=false;
+		
+		if(huchuTong)
+		huchuTong->Destroy();
+	}
+	else if(isGrabbingBottleRight)
+	{
+		if(bottle!=nullptr)
+		{
+			bottle->isGrabbingBottle=false;
+			bottle->isGBR=false;
+			bottle->isDropSoundEnabled=true;
+			bottle->SetSimulateAndTickDisable();
+		}
+		isGrabbingBottleRight=false;
+
+		if(bottle)
+			bottle->Destroy();
+	}
+	else if(isGrabbingTabletRight)
+	{
+		if(tablet!=nullptr)
+		{
+			tablet->isDropSoundEnabled=true;
+			tablet->AttachToTabletStand();
+			tablet->SetSimulateAndTickDisable();
+
+		}
+		isGrabbingTabletRight=false;
+		//widgetInteractionComp->bShowDebug=false;
+		//widgetInteractionCompLeft->bShowDebug=false;
+		if(tablet)
+			tablet->Destroy();
+	}
+	else if(isGrabbingCoasterRight)
+	{
+		if(coaster!=nullptr)
+		{
+			coaster->isDropSoundEnabled=true;
+			coaster->boxComp->SetCollisionProfileName(FName("CoasterBeforeGrab"));
+			coaster->SetSimulateAndTickDisable();
+
+		}
+		isGrabbingCoasterRight=false;
+		if(coaster)
+			coaster->Destroy();
+	}
+	else if(isGrabbingShakerRight)
+	{
+		if(shaker!=nullptr)
+		{
+			shaker->isGSR=false;
+			shaker->isDropSoundEnabled=true;			
+			shaker->VRGripInterfaceSettings.bDenyGripping=false;
+			shaker->isGrabbingShaker=false;
+		
+		}
+		isGrabbingShakerRight=false;
+		if(shaker)
+			shaker->Destroy();
+	}
+	else if(isGrabbingCupRight)
+	{
+		if(cup!=nullptr)
+		{
+			cup->isDropSoundEnabled=true;
+			cup->isCupTickActivated=false;
+			cup->SetSimulateAndTickDisable();
+		}
+		isGrabbingCupRight=false;
+		if(cup)
+			cup->Destroy();
+	}
+	else if(isGrabbingBarSpoonRight)
+	{
+		if(barSpoon!=nullptr)
+		{
+			barSpoon->isDropSoundEnabled=true;
+			barSpoon->meshComp->SetCollisionProfileName(FName("Spoon"));
+		}
+		isGrabbingBarSpoonRight=false;
+		if(barSpoon)
+			barSpoon->Destroy();
+	}
+	else if(isGrabbingShakerLidRight)
+	{
+		if(shakerLid!=nullptr)
+		{
+			shakerLid->isDropSoundEnabled=true;
+			shakerLid->AttachToShakerStrainer();
+			shakerLid->SetSimulateAndTickDisable();
+
+		}
+		isGrabbingShakerLidRight=false;
+		if(shakerLid)
+			shakerLid->Destroy();
+	}
+	else if(isGrabbingShakerStrainerRight)
+	{
+		if(shakerStrainer!=nullptr)
+		{
+			shakerStrainer->isDropSoundEnabled=true;
+			shakerStrainer->AttachToShaker();
+			shakerStrainer->SetSimulateAndTickDisable();
+
+		}
+		isGrabbingShakerStrainerRight=false;
+		if(shakerStrainer)
+			shakerStrainer->Destroy();
+	
+	}
+	else if(isGrabbingMixingGlassRight)
+	{
+		if(mixingGlass!=nullptr)
+		{
+			mixingGlass->isDropSoundEnabled=true;
+			mixingGlass->VRGripInterfaceSettings.bDenyGripping=false;
+			mixingGlass->isGrabbingMixingGlass=false;
+		}
+		isGrabbingMixingGlassRight=false;
+		if(mixingGlass)
+			mixingGlass->Destroy();
+	}
+	else if(isGrabbingStrainerRight)
+	{
+		if(strainer!=nullptr)
+		{
+			strainer->isDropSoundEnabled=true;
+			strainer->AttachToMixingGlass();
+			strainer->SetSimulateAndTickDisable();
+
+		}
+		isGrabbingStrainerRight=false;
+		if(strainer)
+			strainer->Destroy();
+	}
+
+	else if(isGrabbingDrinkCanRight&&drinkCan!=nullptr)
+	{
+		drinkCan->isDropSoundEnabled=true;
+		if(drinkCan)
+			drinkCan->Destroy();
+	}
+	else if(isGrabbingHalfSlicedLimeVatRight&&halfSlicedLimeVat!=nullptr)
+	{
+		halfSlicedLimeVat->isDropSoundEnabled=true;
+		halfSlicedLimeVat->SetSimulateAndTickDisable();
+		if(halfSlicedLimeVat)
+			halfSlicedLimeVat->Destroy();
+
+	}
+	else if(isGrabbingSlicedLimeVatRight&&slicedLimeVat!=nullptr)
+	{
+		slicedLimeVat->isDropSoundEnabled=true;
+		slicedLimeVat->SetSimulateAndTickDisable();
+		if(slicedLimeVat)
+			slicedLimeVat->Destroy();
+
+	}
+	else if(isGrabbingHalfSlicedOrangeVatRight&&halfSlicedOrangeVat!=nullptr)
+	{
+		halfSlicedOrangeVat->isDropSoundEnabled=true;
+		halfSlicedOrangeVat->SetSimulateAndTickDisable();
+		if(halfSlicedOrangeVat)
+			halfSlicedOrangeVat->Destroy();
+
+	}
+	else if(isGrabbingSlicedOrangeVatRight&&slicedOrangeVat!=nullptr)
+	{
+		slicedOrangeVat->isDropSoundEnabled=true;
+		slicedOrangeVat->SetSimulateAndTickDisable();
+		if(slicedOrangeVat)
+			slicedOrangeVat->Destroy();
+
+	}
+	else if(isGrabbingOliveVatRight&&oliveVat!=nullptr)
+	{
+		oliveVat->isDropSoundEnabled=true;
+		oliveVat->SetSimulateAndTickDisable();
+		if(oliveVat)
+			oliveVat->Destroy();
+	}
+	else if(isGrabbingIceCubeVatRight&&iceCubeVat!=nullptr)
+	{
+		iceCubeVat->isDropSoundEnabled=true;
+		iceCubeVat->SetSimulateAndTickDisable();
+		if(iceCubeVat)
+			iceCubeVat->Destroy();
+	}
+
+	isDropped=true;
+}
+
+void APlayerCharacter::DestroyDroppedObjectLeft()
+{
+	// 왼손에 Tongs를 잡고 있었다면
+	if(isGrabbingTongsLeft)
+	{
+		huchuTongL->isDropSoundEnabled=true;
+		// Tongs에 잡혀 있는 대상이 있었다면
+		if(isGrabbingWithTongsLeft)
+		{
+			FLatentActionInfo LatentInfo;
+			LatentInfo.CallbackTarget = this;
+			auto tongCompRef = huchuTongL->tongRight;
+			UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-5, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
+			isTongsTickEnabledL = true;
+			// 1. 잡지않은 상태로 전환
+			isGrabbingWithTongsLeft = false;
+			// 2. 손에서 떼어내기
+			GrabbedObjectWithTongsLeft->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+			// 3. 물리기능 활성화
+			GrabbedObjectWithTongsLeft->SetSimulatePhysics(true);
+			// 4. 충돌기능 활성화
+			GrabbedObjectWithTongsLeft->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			GrabbedObjectWithTongsLeft = nullptr;
+		}
+		huchuTongL->SetSimulateAndTickDisable();
+		isGrabbingTongsLeft=false;
+		if(huchuTongL)
+			huchuTongL->Destroy();
+	}
+	else if(isGrabbingBottleLeft&&bottleL!=nullptr)
+	{
+		bottleL->isDropSoundEnabled=true;
+		bottleL->isGBL=false;
+		bottleL->isGrabbingBottle=false;
+		bottleL->SetSimulateAndTickDisable();
+		isGrabbingBottleLeft=false;
+		if(bottleL)
+			bottleL->Destroy();
+	}
+	else if(isGrabbingTabletLeft&&tabletL!=nullptr)
+	{
+		isGrabbingTabletLeft=false;
+		tabletL->AttachToTabletStand();
+		tabletL->isDropSoundEnabled=true;
+		tabletL->SetSimulateAndTickDisable();
+
+		//widgetInteractionComp->bShowDebug=false;
+		//widgetInteractionCompLeft->bShowDebug=false;
+		if(tabletL)
+			tabletL->Destroy();
+	}
+	else if(isGrabbingCoasterLeft&&coasterL!=nullptr)
+	{
+		coasterL->isDropSoundEnabled=true;
+		coasterL->boxComp->SetCollisionProfileName(FName("CoasterBeforeGrab"));
+		coasterL->SetSimulateAndTickDisable();
+
+		isGrabbingCoasterLeft=false;
+		if(coasterL)
+			coasterL->Destroy();
+	}
+	else if(isGrabbingBarSpoonLeft&&barSpoonL!=nullptr)
+	{
+		barSpoonL->isDropSoundEnabled=true;
+		barSpoonL->meshComp->SetCollisionProfileName(FName("Spoon"));
+		if(barSpoonL)
+			barSpoonL->Destroy();
+
+	}
+	else if(isGrabbingShakerLeft&&shakerL!=nullptr)
+	{
+		shakerL->isGSL=false;
+		shakerL->VRGripInterfaceSettings.bDenyGripping=false;
+		shakerL->isDropSoundEnabled=true;
+		shakerL->isGrabbingShaker=false;		
+		isGrabbingShakerLeft=false;
+		if(shakerL)
+			shakerL->Destroy();
+	}
+	else if(isGrabbingCupLeft&&cupL!=nullptr)
+	{
+		cupL->isDropSoundEnabled=true;
+		cupL->isCupTickActivated=false;
+		cupL->SetSimulateAndTickDisable();
+		isGrabbingCupLeft=false;
+		if(cupL)
+			cupL->Destroy();
+	}
+	else if(isGrabbingShakerLidLeft&&shakerLidL!=nullptr)
+	{			
+		shakerLidL->isDropSoundEnabled=true;
+		shakerLidL->AttachToShakerStrainer();
+		shakerLidL->SetSimulateAndTickDisable();
+
+		isGrabbingShakerLidLeft=false;
+		if(shakerLidL)
+			shakerLidL->Destroy();
+	}
+	else if(isGrabbingShakerStrainerLeft&&shakerStrainerL!=nullptr)
+	{	
+		shakerStrainerL->isDropSoundEnabled=true;
+		shakerStrainerL->AttachToShaker();
+		shakerStrainerL->SetSimulateAndTickDisable();
+
+		isGrabbingShakerStrainerLeft=false;
+		if(shakerStrainerL)
+			shakerStrainerL->Destroy();
+	
+	}
+	else if(isGrabbingMixingGlassLeft&&mixingGlassL!=nullptr)
+	{
+		mixingGlassL->VRGripInterfaceSettings.bDenyGripping=false;
+		mixingGlassL->isDropSoundEnabled=true;
+		mixingGlassL->isGrabbingMixingGlass=false;
+		isGrabbingMixingGlassLeft=false;
+		if(mixingGlassL)
+			mixingGlassL->Destroy();
+	}
+	else if(isGrabbingStrainerLeft&&strainerL!=nullptr)
+	{
+		strainerL->isDropSoundEnabled=true;
+		strainerL->AttachToMixingGlass();
+		strainerL->SetSimulateAndTickDisable();
+
+		isGrabbingStrainerLeft=false;
+		if(strainerL)
+			strainerL->Destroy();
+			
+	}
+
+	else if(isGrabbingDrinkCanLeft&&drinkCanL!=nullptr)
+	{
+		drinkCanL->isDropSoundEnabled=true;
+		if(drinkCanL)
+			drinkCanL->Destroy();
+	}
+	else if(isGrabbingHalfSlicedLimeVatLeft&&halfSlicedLimeVatL!=nullptr)
+	{
+		halfSlicedLimeVatL->isDropSoundEnabled=true;
+		halfSlicedLimeVatL->SetSimulateAndTickDisable();
+		if(halfSlicedLimeVatL)
+			halfSlicedLimeVatL->Destroy();
+
+	}
+	else if(isGrabbingSlicedLimeVatLeft&&slicedLimeVatL!=nullptr)
+	{
+		slicedLimeVatL->isDropSoundEnabled=true;
+		slicedLimeVatL->SetSimulateAndTickDisable();
+		if(slicedLimeVatL)
+			slicedLimeVatL->Destroy();
+
+	}
+	else if(isGrabbingHalfSlicedOrangeVatLeft&&halfSlicedOrangeVatL!=nullptr)
+	{
+		halfSlicedOrangeVatL->isDropSoundEnabled=true;
+		halfSlicedOrangeVatL->SetSimulateAndTickDisable();
+		if(halfSlicedOrangeVatL)
+			halfSlicedOrangeVatL->Destroy();
+
+	}
+	else if(isGrabbingSlicedOrangeVatLeft&&slicedOrangeVatL!=nullptr)
+	{
+		slicedOrangeVatL->isDropSoundEnabled=true;
+		slicedOrangeVatL->SetSimulateAndTickDisable();
+		if(slicedOrangeVatL)
+			slicedOrangeVatL->Destroy();
+
+	}
+	else if(isGrabbingOliveVatLeft&&oliveVatL!=nullptr)
+	{
+		oliveVatL->isDropSoundEnabled=true;
+		oliveVatL->SetSimulateAndTickDisable();
+		if(oliveVatL)
+			oliveVatL->Destroy();
+
+	}
+	else if(isGrabbingIceCubeVatLeft&&iceCubeVatL!=nullptr)
+	{
+		iceCubeVatL->isDropSoundEnabled=true;
+		iceCubeVatL->SetSimulateAndTickDisable();
+		if(iceCubeVatL)
+			iceCubeVatL->Destroy();
+
+	}
+	
+	isDropped=true;
+
+}
+
 void APlayerCharacter::FireRight()
 {	
 	if(widgetInteractionComp)

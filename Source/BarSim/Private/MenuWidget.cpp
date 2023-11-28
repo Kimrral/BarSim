@@ -55,6 +55,10 @@ void UMenuWidget::NativeConstruct()
 	btn_SetKorean->OnPressed.AddDynamic(this, &UMenuWidget::KoreanSelected);
 	btn_LanguageCheckYes->OnPressed.AddDynamic(this, &UMenuWidget::LangCheckYes);
 	btn_LanguageCheckNo->OnPressed.AddDynamic(this, &UMenuWidget::LangCheckNo);
+	// 핸드 리셋 바인드
+	btn_ResetHands->OnPressed.AddDynamic(this, &UMenuWidget::ChoiceResetHand);
+	btn_HandResetCheckYes->OnPressed.AddDynamic(this, &UMenuWidget::LangCheckNo);
+	btn_HandResetCheckNo->OnPressed.AddDynamic(this, &UMenuWidget::LangCheckNo);
 }
 
 void UMenuWidget::StoryStart()
@@ -556,6 +560,10 @@ void UMenuWidget::SetLanguageEnglish()
 	text_LanguageCheck2->SetText(FText::FromString("Would you like to return to the checkpoint now?"));
 	text_LanguageCheckYes->SetText(FText::FromString("Yes"));
 	text_LanguageCheckNo->SetText(FText::FromString("No"));
+	text_HandResetCheck->SetText(FText::FromString("You can reset your hands in case of trouble."));
+	text_HandResetCheck2->SetText(FText::FromString("Do you want to reset hands now?"));
+	text_HandResetCheckYes->SetText(FText::FromString("Yes"));
+	text_HandResetCheckNo->SetText(FText::FromString("No"));
 
 
 	if(gi)
@@ -590,6 +598,8 @@ void UMenuWidget::SetLanguageKorean()
 	KorLanguageArray.Emplace(FString::Printf(TEXT("언어를 선택하세요"))); //8
 	KorLanguageArray.Emplace(FString::Printf(TEXT("언어 설정을 하면, 체크 포인트로 돌아가게 됩니다."))); //9
 	KorLanguageArray.Emplace(FString::Printf(TEXT("지금 체크 포인트로 돌아가시겠습니까?"))); //10
+	KorLanguageArray.Emplace(FString::Printf(TEXT("문제가 발생한 경우에, 손을 리셋할 수 있습니다."))); //11
+	KorLanguageArray.Emplace(FString::Printf(TEXT("지금 손을 리셋하시겠습니까?"))); //12
 	text_AskTutorial->SetText(FText::FromString(KorLanguageArray[2]));
 	text_TutYes->SetText(FText::FromString(KorLanguageArray[0]));
 	text_TutNo->SetText(FText::FromString(KorLanguageArray[1]));
@@ -609,7 +619,11 @@ void UMenuWidget::SetLanguageKorean()
 	text_LanguageCheck2->SetText(FText::FromString(KorLanguageArray[10]));
 	text_LanguageCheckYes->SetText(FText::FromString(KorLanguageArray[0]));
 	text_LanguageCheckNo->SetText(FText::FromString(KorLanguageArray[1]));
-
+	text_HandResetCheck->SetText(FText::FromString(KorLanguageArray[11]));
+	text_HandResetCheck2->SetText(FText::FromString(KorLanguageArray[12]));
+	text_HandResetCheckYes->SetText(FText::FromString(KorLanguageArray[0]));
+	text_HandResetCheckNo->SetText(FText::FromString(KorLanguageArray[1]));
+	
 	if(gi)
 	{
 		if(gi->bCheckMenu != true)
@@ -623,6 +637,26 @@ void UMenuWidget::SetLanguageKorean()
 	}
 	
 
+}
+
+void UMenuWidget::ChoiceResetHand()
+{
+	WidgetSwitcher_Menu->SetActiveWidgetIndex(8);
+}
+
+void UMenuWidget::HandResetYes()
+{
+	if(gi)
+	{
+		//gi->resetHandDele.Broadcast();
+	}
+
+	ResumeGame();
+}
+
+void UMenuWidget::HandResetNo()
+{
+	WidgetSwitcher_Menu->SetActiveWidgetIndex(2);
 }
 
 void UMenuWidget::EnglishSelected()

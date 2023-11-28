@@ -7,6 +7,7 @@
 #include "BarGameInstance.generated.h"
 
 DECLARE_DELEGATE(FGoMainDele);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FResetHandDele);
 
 /**
  * 
@@ -20,6 +21,7 @@ public:
 	virtual void Init() override;
 	
 	FGoMainDele goToMainMapDele;
+	//FResetHandDele resetHandDele;
 
 	UPROPERTY()
 	class AGameStartManager* startManager;
@@ -29,6 +31,9 @@ public:
 
 	UFUNCTION()
 	void BindFunction();
+
+	UFUNCTION()
+	void ResetHandBroadcast();
 
 	// 날짜
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

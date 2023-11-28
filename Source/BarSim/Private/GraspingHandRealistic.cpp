@@ -53,6 +53,11 @@ void AGraspingHandRealistic::BeginPlay()
 	
 	actorInfoWidgetComp->SetVisibility(false);
 	BarGameInstance = Cast<UBarGameInstance>(GetWorld()->GetGameInstance());
+
+	if(BarGameInstance)
+	{
+		//BarGameInstance->resetHandDele.AddDynamic(this, &AGraspingHandRealistic::RespawnGraspingHands);
+	}
 }
 
 void AGraspingHandRealistic::Tick(float DeltaTime)

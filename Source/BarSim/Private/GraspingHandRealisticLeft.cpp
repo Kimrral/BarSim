@@ -53,6 +53,11 @@ void AGraspingHandRealisticLeft::BeginPlay()
 	skeletalHand->OnComponentBeginOverlap.AddDynamic(this, &AGraspingHandRealisticLeft::OnOverlap);
 	actorInfoWidgetComp->SetVisibility(false);
 	BarGameInstance = Cast<UBarGameInstance>(GetWorld()->GetGameInstance());
+
+	if(BarGameInstance)
+	{
+		//BarGameInstance->resetHandDele.AddDynamic(this, &AGraspingHandRealisticLeft::RespawnGraspingHands);
+	}
 }
 
 void AGraspingHandRealisticLeft::Tick(float DeltaTime)

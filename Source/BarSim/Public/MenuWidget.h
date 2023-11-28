@@ -97,6 +97,15 @@ public:
 	class UButton* btn_LanguageCheckYes;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta=(BindWidget))
 	class UButton* btn_LanguageCheckNo;
+
+	// 손 리셋
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta=(BindWidget))
+	class UButton* btn_ResetHands;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta=(BindWidget))
+	class UButton* btn_HandResetCheckYes;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta=(BindWidget))
+	class UButton* btn_HandResetCheckNo;
+	
 	
 	// 0일차 메뉴 함수
 	UFUNCTION()
@@ -157,6 +166,15 @@ public:
 	UFUNCTION()
 	void SetLanguageKorean();
 
+	UFUNCTION()
+	void ChoiceResetHand();
+
+	UFUNCTION()
+	void HandResetYes();
+
+	UFUNCTION()
+	void HandResetNo();
+
 
 	UPROPERTY()
 	TArray<FString> KorLanguageArray;
@@ -204,6 +222,14 @@ public:
 	class UTextBlock* text_LanguageCheckYes;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta=(BindWidget))
 	class UTextBlock* text_LanguageCheckNo;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta=(BindWidget))
+	class UTextBlock* text_HandResetCheck;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta=(BindWidget))
+	class UTextBlock* text_HandResetCheck2;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta=(BindWidget))
+	class UTextBlock* text_HandResetCheckYes;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta=(BindWidget))
+	class UTextBlock* text_HandResetCheckNo;
 
 	UPROPERTY()
 	bool bSelectEnglish=false;

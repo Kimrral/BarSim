@@ -17,6 +17,10 @@ void UBarGameInstance::Init()
 	
 	//델리게이트 연결 함수 실행
 	BindFunction();
+
+	//resetHandDele.AddDynamic(this, &UBarGameInstance::ResetHandBroadcast);
+
+	
 }
 
 void UBarGameInstance::CheckDay()
@@ -37,6 +41,11 @@ void UBarGameInstance::BindFunction()
 {
 	// 체크데이 함수 델리케이트에 연결
 	goToMainMapDele.BindUFunction(this, FName("CheckDay"));
+}
+
+void UBarGameInstance::ResetHandBroadcast()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Reset Hand GI"))
 }
 
 void UBarGameInstance::AddMoney(float money)
