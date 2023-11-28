@@ -10,13 +10,8 @@
   <component name="ChangeListManager">
     <list default="true" id="1c888e18-d659-4b33-83f4-437f5be1f042" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BarSim/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BarSim/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/KHJContents/HandAnimBP/GraspingHandRealistic.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/KHJContents/HandAnimBP/GraspingHandRealistic.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/KHJContents/HandAnimBP/GraspingHandRealisticLeft.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/KHJContents/HandAnimBP/GraspingHandRealisticLeft.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BarSim/Private/BarGameInstance.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BarSim/Private/BarGameInstance.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BarSim/Private/GraspingHandRealistic.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BarSim/Private/GraspingHandRealistic.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BarSim/Private/GraspingHandRealisticLeft.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BarSim/Private/GraspingHandRealisticLeft.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BarSim/Private/MenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BarSim/Private/MenuWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BarSim/Public/BarGameInstance.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BarSim/Public/BarGameInstance.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BarSim/Private/PlayerCharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BarSim/Private/PlayerCharacter.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BarSim/Public/PlayerCharacter.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BarSim/Public/PlayerCharacter.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -241,7 +236,7 @@
       <workItem from="1698580145986" duration="3749000" />
       <workItem from="1698634227684" duration="461000" />
       <workItem from="1699013594396" duration="209000" />
-      <workItem from="1701131629902" duration="7211000" />
+      <workItem from="1701131629902" duration="8638000" />
     </task>
     <servers />
   </component>

@@ -105,6 +105,11 @@ void APlayerCharacter::BeginPlay()
 
 	BarGameInstance = Cast<UBarGameInstance>(GetWorld()->GetGameInstance());
 
+	if(BarGameInstance)
+	{
+		BarGameInstance->resetHandDele.AddDynamic(this, &APlayerCharacter::ResetGraspingHands);
+	}
+
 	FTimerHandle timer;
 	GetWorldTimerManager().SetTimer(timer, this, &APlayerCharacter::PlayerStartText, 3.0f, false);
 }

@@ -86,6 +86,8 @@ public:
 	void ShowGuideWidget();
 	void HideGuideWidget();
 	void TestInputKey();
+	UFUNCTION(BlueprintImplementableEvent)
+	void ResetGraspingHands();
 
 	// Grabbing Boolean
 	bool IsGrabbedLeft = false;
