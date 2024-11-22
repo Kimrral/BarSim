@@ -14,7 +14,7 @@ class BARSIM_API AGraspingHandRealistic : public AOptionalRepGrippableSkeletalMe
 {
 	GENERATED_BODY()
 
-public:
+public:	
 	// Sets default values for this actor's properties
 	AGraspingHandRealistic(const FObjectInitializer& ObjectInitializer);
 
@@ -22,12 +22,12 @@ public:
 	class UWidgetComponent* actorInfoWidgetComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PlayerSettings")
 	class UActorInfoWidget* actorInfoWidget;
-
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:
+public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -35,15 +35,15 @@ public:
 	class USkeletalMeshComponent* skeletalHand;
 
 	UFUNCTION()
-	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnOverlap(UPrimitiveComponent*OverlappedComponent, AActor*OtherActor, UPrimitiveComponent*OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void RespawnGraspingHands();
+	void RespawnGraspingHands();	
 
 	// Game Instance
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UBarGameInstance* BarGameInstance;
-
+	
 	// References
 	UPROPERTY()
 	class AHuchuTong* huchuTong;
@@ -97,7 +97,7 @@ public:
 	// Player Controller
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	class APlayerController* PC;
-
+	
 	// Haptic Feedback
 	UPROPERTY(EditDefaultsOnly, Category="Haptics")
 	class UHapticFeedbackEffect_Curve* HF_ActorOverlap;

@@ -21,7 +21,7 @@ protected:
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
-
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -42,7 +42,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	class UNiagaraComponent* WidgetTraceLeft;
 
-
+	
 	// Aims
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "HandComp")
 	class UMotionControllerComponent* RightAim;
@@ -64,7 +64,7 @@ public:
 	class UInputAction* ShowGuide;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* TestInput;
-
+	
 	// Functions
 	UFUNCTION(BlueprintCallable)
 	void CheckGrabbedObjectRight();
@@ -94,8 +94,8 @@ public:
 	bool IsGrabbedRight = false;
 	bool isGrabbingTongsLeft = false;
 	bool isGrabbingTongsRight = false;
-	bool isGrabbingWithTongsRight = false;
-	bool isGrabbingWithTongsLeft = false;
+	bool isGrabbingWithTongsRight=false;
+	bool isGrabbingWithTongsLeft=false;
 	bool isTongsTickEnabled = true;
 	bool isTongsTickEnabledL = true;
 	bool isRecipeMode = false;
@@ -105,28 +105,28 @@ public:
 	bool isGrabbingTabletRight = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool isGrabbingTabletLeft = false;
-	bool isGrabbingCoasterRight = false;
+	bool isGrabbingCoasterRight=false;
 	bool isGrabbingCoasterLeft = false;
 	bool isGrabbingCupLeft = false;
 	bool isGrabbingCupRight = false;
-	bool isGrabbingBarSpoonLeft = false;
-	bool isGrabbingBarSpoonRight = false;
-	bool isGrabbingShakerRight = false;
-	bool isGrabbingShakerLeft = false;
-	bool isGrabbingShakerStrainerRight = false;
-	bool isGrabbingShakerStrainerLeft = false;
-	bool isGrabbingStrainerRight = false;
-	bool isGrabbingStrainerLeft = false;
-	bool isGrabbingMixingGlassRight = false;
-	bool isGrabbingMixingGlassLeft = false;
-	bool isGrabbingShakerLidRight = false;
-	bool isGrabbingShakerLidLeft = false;
-	bool isGrabbingIceWithTongsRight = false;
-	bool isGrabbingIceWithTongsLeft = false;
-	bool isGrabbingLimeWithTongsRight = false;
-	bool isGrabbingLimeWithTongsLeft = false;
-	bool isGrabbingOliveWithTongsRight = false;
-	bool isGrabbingOliveWithTongsLeft = false;
+	bool isGrabbingBarSpoonLeft=false;
+	bool isGrabbingBarSpoonRight=false;
+	bool isGrabbingShakerRight=false;
+	bool isGrabbingShakerLeft=false;
+	bool isGrabbingShakerStrainerRight=false;
+	bool isGrabbingShakerStrainerLeft=false;
+	bool isGrabbingStrainerRight=false;
+	bool isGrabbingStrainerLeft=false;
+	bool isGrabbingMixingGlassRight=false;
+	bool isGrabbingMixingGlassLeft=false;
+	bool isGrabbingShakerLidRight=false;
+	bool isGrabbingShakerLidLeft=false;
+	bool isGrabbingIceWithTongsRight=false;
+	bool isGrabbingIceWithTongsLeft=false;
+	bool isGrabbingLimeWithTongsRight=false;
+	bool isGrabbingLimeWithTongsLeft=false;
+	bool isGrabbingOliveWithTongsRight=false;
+	bool isGrabbingOliveWithTongsLeft=false;
 	bool isGrabbingDrinkCanRight = false;
 	bool isGrabbingDrinkCanLeft = false;
 	bool isGrabbingOrangeWithTongsRight = false;
@@ -137,20 +137,20 @@ public:
 	bool isGrabbingHalfSlicedLimeVatLeft = false;
 	bool isGrabbingSlicedOrangeVatRight = false;
 	bool isGrabbingSlicedOrangeVatLeft = false;
-	bool isGrabbingHalfSlicedOrangeVatRight = false;
-	bool isGrabbingHalfSlicedOrangeVatLeft = false;
+	bool isGrabbingHalfSlicedOrangeVatRight =false;
+	bool isGrabbingHalfSlicedOrangeVatLeft =false;
 	bool isGrabbingOliveVatRight = false;
 	bool isGrabbingOliveVatLeft = false;
-	bool isGrabbingIceCubeVatRight = false;
-	bool isGrabbingIceCubeVatLeft = false;
-
-
+	bool isGrabbingIceCubeVatRight =false;
+	bool isGrabbingIceCubeVatLeft =false;
+	
+	
 	bool isVatCastedRight = false;
 	bool isVatCastedLeft = false;
-
+	
 
 	bool menuWidgetBool = false;
-
+		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Input)
 	double fingerPressedActionValue;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Input)
@@ -164,7 +164,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	float TongsGrabRange = 10;
-
+	
 	// 오른손 그랩 액터
 	UPROPERTY()
 	class AActor* GrabbedActorRight;
@@ -288,7 +288,7 @@ public:
 	class ASlicedOrangeVat* slicedOrangeVatL;
 	UPROPERTY()
 	class AOliveVat* oliveVatL;
-
+	
 	// Sounds
 	UPROPERTY(EditAnywhere, Category="PlayerSounds")
 	class USoundBase* grabSound;
@@ -301,7 +301,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="PlayerSounds")
 	class USoundBase* TriggerReleasedSound;
-
+	
 	UPROPERTY(EditAnywhere, Category="PlayerSounds")
 	class USoundBase* MenuWidgetAppearSound;
 
@@ -313,7 +313,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="PlayerSounds")
 	class USoundBase* GuideWidgetDisappearSound;
-
+	
 
 	// Lime BP
 	UPROPERTY(EditAnywhere, Category="Factory")
@@ -344,16 +344,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Haptics")
 	class UHapticFeedbackEffect_Curve* HF_GrabObjectLeft;
 
-
+	
 	// Camera Fade
 	UFUNCTION(BlueprintImplementableEvent)
 	void StartCameraFade();
 
-
+	
 	// 대사
 	UFUNCTION(BlueprintCallable)
 	void PlayerTutoText();
-
+	
 	UFUNCTION()
 	void PlayerStartText();
 
@@ -377,7 +377,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AGuideWidgetActor> guideFactory;
-
+	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AGuideWidgetActor> guideFactoryEng;
 };

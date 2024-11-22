@@ -45,6 +45,7 @@
 
 APlayerCharacter::APlayerCharacter()
 {
+
 	widgetInteractionComp = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("widgetInteractionComp"));
 	widgetInteractionComp->SetupAttachment(RightMotionController);
 	widgetInteractionComp->SetRelativeLocation(FVector(9.1321, -2.7411, -8.8955));
@@ -55,10 +56,10 @@ APlayerCharacter::APlayerCharacter()
 	widgetInteractionCompLeft->SetRelativeLocation(FVector(9.0641, 5.1962, -10.4361));
 	widgetInteractionCompLeft->SetRelativeRotation(FRotator(-52.5329, 21.7898, -2.4338));
 
-	WidgetTraceRight = CreateDefaultSubobject<UNiagaraComponent>(TEXT("WidgetTraceRight"));
+	WidgetTraceRight=CreateDefaultSubobject<UNiagaraComponent>(TEXT("WidgetTraceRight"));
 	WidgetTraceRight->SetupAttachment(widgetInteractionComp);
 
-	WidgetTraceLeft = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraWidgetTraceLeft"));
+	WidgetTraceLeft=CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraWidgetTraceLeft"));
 	WidgetTraceLeft->SetupAttachment(widgetInteractionCompLeft);
 
 	playerTextWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("playerTextWidget"));
@@ -75,24 +76,25 @@ void APlayerCharacter::BeginPlay()
 	if (PC)
 	{
 		// LocalPlayer
-		const auto LocalPlayer = PC->GetLocalPlayer();
-		if (const auto SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
+		auto localPlayer = PC->GetLocalPlayer();
+		auto subSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(localPlayer);
+		if (subSystem)
 		{
-			SubSystem->AddMappingContext(VREInputMappingContext, 0);
-			SubSystem->AddMappingContext(IMC_Hand, 0);
+			subSystem->AddMappingContext(VREInputMappingContext, 0);
+			subSystem->AddMappingContext(IMC_Hand, 0);
 		}
 	}
 
 	//GetCharacterMovement()->bRequestedMoveUseAcceleration=false;
 	//GetCharacterMovement()->bNetworkSkipProxyPredictionOnNetUpdate=true;
+	
+	widgetInteractionComp->bEnableHitTesting=true;
+	widgetInteractionComp->bShowDebug=false;	
+	widgetInteractionComp->InteractionDistance=300.0f;
 
-	widgetInteractionComp->bEnableHitTesting = true;
-	widgetInteractionComp->bShowDebug = false;
-	widgetInteractionComp->InteractionDistance = 300.0f;
-
-	widgetInteractionCompLeft->bEnableHitTesting = true;
-	widgetInteractionCompLeft->bShowDebug = false;
-	widgetInteractionCompLeft->InteractionDistance = 300.0f;
+	widgetInteractionCompLeft->bEnableHitTesting=true;
+	widgetInteractionCompLeft->bShowDebug=false;	
+	widgetInteractionCompLeft->InteractionDistance=300.0f;
 
 	WidgetTraceLeft->SetVisibility(false);
 	WidgetTraceRight->SetVisibility(false);
@@ -103,52 +105,56 @@ void APlayerCharacter::BeginPlay()
 
 	BarGameInstance = Cast<UBarGameInstance>(GetWorld()->GetGameInstance());
 
-	if (BarGameInstance)
+	if(BarGameInstance)
 	{
 		BarGameInstance->resetHandDele.AddDynamic(this, &APlayerCharacter::ResetGraspingHands);
 	}
 
-	FTimerHandle Timer;
-	GetWorldTimerManager().SetTimer(Timer, this, &APlayerCharacter::PlayerStartText, 3.0f, false);
+	FTimerHandle timer;
+	GetWorldTimerManager().SetTimer(timer, this, &APlayerCharacter::PlayerStartText, 3.0f, false);
 }
 
 
-void APlayerCharacter::Tick(const float DeltaTime)
+
+void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 	// Tongs가 nullptr이 아니면서
-	if (huchuTong != nullptr)
+	if(huchuTong!=nullptr)
 	{
 		// 오른손에 Tongs를 쥐고 있다면
-		if (isGrabbingTongsRight)
+		if(isGrabbingTongsRight)
 		{
 			// Oculus Trigger Input Value에 따른 Tongs Rotation 제어 Tick 활성화가 되어있다면
-			if (isTongsTickEnabled == true)
+			if(isTongsTickEnabled == true)
 			{
-				huchuTong->tongRight->SetRelativeRotation(FRotator(fingerPressedActionValue * 15, 0, 0));
+				huchuTong->tongRight->SetRelativeRotation(FRotator(fingerPressedActionValue*15, 0, 0));
 			}
+			
 		}
 	}
 	// Tongs가 nullptr이 아니면서
-	if (huchuTongL != nullptr)
+	if(huchuTongL!=nullptr)
 	{
 		// 왼손에 Tongs를 쥐고 있다면
-		if (isGrabbingTongsLeft)
+		if(isGrabbingTongsLeft)
 		{
 			// Oculus Trigger Input Value에 따른 Tongs Rotation 제어 Tick 왼쪽 활성화가 되어있다면
-			if (isTongsTickEnabledL == true)
+			if(isTongsTickEnabledL == true)
 			{
-				huchuTongL->tongRight->SetRelativeRotation(FRotator(fingerPressedActionValueLeft * 15, 0, 0));
+				huchuTongL->tongRight->SetRelativeRotation(FRotator(fingerPressedActionValueLeft*15, 0, 0));
 			}
+			
 		}
 	}
 
 	// Tablet Widget Line Trace
-	if (widgetInteractionComp->IsOverHitTestVisibleWidget())
+	bool bOverWidget = widgetInteractionComp->IsOverHitTestVisibleWidget();
+	if(bOverWidget)
 	{
-		const auto HitDist = widgetInteractionComp->GetLastHitResult().Distance;
-		WidgetTraceRight->SetVectorParameter(FName("LaserEnd"), FVector(HitDist - 3, 0, 0));
+		auto hitDist = widgetInteractionComp->GetLastHitResult().Distance;
+		WidgetTraceRight->SetVectorParameter(FName("LaserEnd"), FVector(hitDist-3, 0, 0));
 		WidgetTraceRight->SetVisibility(true);
 	}
 	else
@@ -156,23 +162,26 @@ void APlayerCharacter::Tick(const float DeltaTime)
 		WidgetTraceRight->SetVisibility(false);
 	}
 	// Tablet Widget Line Trace Left
-	if (widgetInteractionCompLeft->IsOverHitTestVisibleWidget())
+	bool bOverWidgetLeft = widgetInteractionCompLeft->IsOverHitTestVisibleWidget();
+	if(bOverWidgetLeft)
 	{
-		const auto HitDist = widgetInteractionCompLeft->GetLastHitResult().Distance;
-		WidgetTraceLeft->SetVectorParameter(FName("LaserEnd"), FVector(HitDist - 3, 0, 0));
+		auto hitDist = widgetInteractionCompLeft->GetLastHitResult().Distance;
+		WidgetTraceLeft->SetVectorParameter(FName("LaserEnd"), FVector(hitDist-3, 0, 0));
 		WidgetTraceLeft->SetVisibility(true);
 	}
 	else
 	{
-		WidgetTraceLeft->SetVisibility(false);
+		WidgetTraceLeft->SetVisibility(false);	
 	}
+
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	if (UEnhancedInputComponent* const InputSystem = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	
+	auto InputSystem = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
+	if (InputSystem)
 	{
 		//Binding
 		InputSystem->BindAction(UseHeldObjectLeft, ETriggerEvent::Started, this, &APlayerCharacter::FireLeft);
@@ -183,6 +192,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		InputSystem->BindAction(ShowGuide, ETriggerEvent::Started, this, &APlayerCharacter::ShowGuideWidget);
 		InputSystem->BindAction(ShowGuide, ETriggerEvent::Completed, this, &APlayerCharacter::HideGuideWidget);
 		InputSystem->BindAction(TestInput, ETriggerEvent::Completed, this, &APlayerCharacter::TestInputKey);
+
 	}
 }
 
@@ -190,32 +200,32 @@ void APlayerCharacter::CheckGrabbedObjectRight()
 {
 	// Grabbing Sound
 	UGameplayStatics::PlaySound2D(GetWorld(), grabSound, 1.2, 1, 0);
-
+	
 	// Haptic Feedback
-	if (PC)
+	if(PC)
 	{
-		PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);
+		PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);			
 	}
-
+	
 	TArray<AActor*> RightGrippedActors;
 	RightMotionController->GetGrippedActors(RightGrippedActors);
-	for (int i = 0; i < RightGrippedActors.Num(); ++i)
+	for(int i=0; i<RightGrippedActors.Num(); ++i)
 	{
 		GrabbedActorRight = RightGrippedActors[i];
 	}
 
 	// Right Grabbed Actor Casting
-	huchuTong = Cast<AHuchuTong>(GrabbedActorRight);
+	huchuTong=Cast<AHuchuTong>(GrabbedActorRight);
 	bottle = Cast<ABottleBase>(GrabbedActorRight);
 	tablet = Cast<ATablet>(GrabbedActorRight);
-	coaster = Cast<ACoaster>(GrabbedActorRight);
-	cup = Cast<ACupBase>(GrabbedActorRight);
-	barSpoon = Cast<ABarSpoon>(GrabbedActorRight);
-	strainer = Cast<AStrainer>(GrabbedActorRight);
-	shakerStrainer = Cast<AShakerStrainer>(GrabbedActorRight);
-	shakerLid = Cast<AShakerLid>(GrabbedActorRight);
-	shaker = Cast<AShaker>(GrabbedActorRight);
-	mixingGlass = Cast<AMixingGlass>(GrabbedActorRight);
+	coaster=Cast<ACoaster>(GrabbedActorRight);
+	cup=Cast<ACupBase>(GrabbedActorRight);
+	barSpoon=Cast<ABarSpoon>(GrabbedActorRight);
+	strainer=Cast<AStrainer>(GrabbedActorRight);
+	shakerStrainer=Cast<AShakerStrainer>(GrabbedActorRight);
+	shakerLid=Cast<AShakerLid>(GrabbedActorRight);
+	shaker=Cast<AShaker>(GrabbedActorRight);
+	mixingGlass=Cast<AMixingGlass>(GrabbedActorRight);
 	drinkCan = Cast<ADrinkCan>(GrabbedActorRight);
 	slicedLimeVat = Cast<ASlicedLimeVat>(GrabbedActorRight);
 	halfSlicedLimeVat = Cast<AHalfSlicedLimeVat>(GrabbedActorRight);
@@ -223,172 +233,177 @@ void APlayerCharacter::CheckGrabbedObjectRight()
 	halfSlicedOrangeVat = Cast<AHalfSlicedOrangeVat>(GrabbedActorRight);
 	oliveVat = Cast<AOliveVat>(GrabbedActorRight);
 	iceCubeVat = Cast<AIceCubeVat>(GrabbedActorRight);
-
-	// 잡은 대상이 Tongs라면
-	if (GrabbedActorRight == huchuTong && huchuTong != nullptr)
-	{
-		isGrabbingTongsRight = true;
-		GetWorld()->GetTimerManager().ClearTimer(huchuTong->simHandle);
-	}
-	// 잡은 대상이 Bottle 이라면
-	else if (GrabbedActorRight == bottle && bottle != nullptr)
-	{
-		isGrabbingBottleRight = true;
-		GetWorld()->GetTimerManager().ClearTimer(bottle->simHandle);
-		bottle->SetActorTickEnabled(true);
-		bottle->isGrabbingBottle = true;
-		bottle->isGBR = true;
-	}
-	// 잡은 대상이 Tablet 이라면
-	else if (GrabbedActorRight == tablet && tablet != nullptr)
-	{
-		isGrabbingTabletRight = true;
-		GetWorld()->GetTimerManager().ClearTimer(tablet->simHandle);
-		tablet->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-		tablet->VRGripInterfaceSettings.bSimulateOnDrop = true;
-		//widgetInteractionComp->bShowDebug=false;
-		//widgetInteractionCompLeft->bShowDebug=true;
-	}
-	// 잡은 대상이 Coaster이라면
-	else if (GrabbedActorRight == coaster && coaster != nullptr)
-	{
-		isGrabbingCoasterRight = true;
-		GetWorld()->GetTimerManager().ClearTimer(coaster->simHandle);
-		coaster->boxComp->SetCollisionProfileName(FName("CoasterAfterGrab"));
-	}
+	
+		// 잡은 대상이 Tongs라면
+		if(GrabbedActorRight==huchuTong&&huchuTong!=nullptr)
+		{
+			isGrabbingTongsRight=true;
+			GetWorld()->GetTimerManager().ClearTimer(huchuTong->simHandle);
+		}
+		// 잡은 대상이 Bottle 이라면
+		else if(GrabbedActorRight == bottle&&bottle!=nullptr)
+		{
+			isGrabbingBottleRight = true;
+			GetWorld()->GetTimerManager().ClearTimer(bottle->simHandle);
+			bottle->SetActorTickEnabled(true);
+			bottle->isGrabbingBottle=true;
+			bottle->isGBR=true;
+		}
+		// 잡은 대상이 Tablet 이라면
+		else if(GrabbedActorRight==tablet&&tablet!=nullptr)
+		{
+			isGrabbingTabletRight=true;
+			GetWorld()->GetTimerManager().ClearTimer(tablet->simHandle);
+			tablet->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			tablet->VRGripInterfaceSettings.bSimulateOnDrop=true;
+			//widgetInteractionComp->bShowDebug=false;
+			//widgetInteractionCompLeft->bShowDebug=true;
+		}		
+		// 잡은 대상이 Coaster이라면
+		else if(GrabbedActorRight==coaster&&coaster!=nullptr)
+		{
+			isGrabbingCoasterRight=true;
+			GetWorld()->GetTimerManager().ClearTimer(coaster->simHandle);
+			coaster->boxComp->SetCollisionProfileName(FName("CoasterAfterGrab"));
+		}
 	// 잡은 대상이 Shaker이라면
-	else if (GrabbedActorRight == shaker && shaker != nullptr)
+	else if(GrabbedActorRight==shaker&&shaker!=nullptr)
 	{
-		isGrabbingShakerRight = true;
-		shaker->isGSR = true;
-		shaker->SetActorTickEnabled(true);
-		shaker->isGrabbingShaker = true;
-		shaker->VRGripInterfaceSettings.bDenyGripping = true;
+		isGrabbingShakerRight=true;
+		shaker->isGSR=true;
+		shaker->SetActorTickEnabled(true);			
+		shaker->isGrabbingShaker=true;
+		shaker->VRGripInterfaceSettings.bDenyGripping=true;			
 	}
-	// 잡은 대상이 Cup이라면
-	else if (GrabbedActorRight == cup && cup != nullptr)
-	{
-		isGrabbingCupRight = true;
-		GetWorld()->GetTimerManager().ClearTimer(cup->simHandle);
-		cup->SetActorTickEnabled(true);
-		cup->isCupTickActivated = true;
-	}
-	// 잡은 대상이 BarSpoon이라면
-	else if (GrabbedActorRight == barSpoon && barSpoon != nullptr)
-	{
-		isGrabbingBarSpoonRight = true;
-		barSpoon->meshComp->SetCollisionProfileName(FName("SpoonGrabbed"));
-	}
+		// 잡은 대상이 Cup이라면
+		else if(GrabbedActorRight==cup&&cup!=nullptr)
+		{
+			isGrabbingCupRight=true;
+			GetWorld()->GetTimerManager().ClearTimer(cup->simHandle);
+			cup->SetActorTickEnabled(true);
+			cup->isCupTickActivated=true;
+		}
+		// 잡은 대상이 BarSpoon이라면
+		else if(GrabbedActorRight==barSpoon&&barSpoon!=nullptr)
+		{
+			isGrabbingBarSpoonRight=true;
+			barSpoon->meshComp->SetCollisionProfileName(FName("SpoonGrabbed"));
+		}
 
-	// 잡은 대상이 ShakerLid라면
-	else if (GrabbedActorRight == shakerLid && shakerLid != nullptr)
-	{
-		isGrabbingShakerLidRight = true;
-		GetWorld()->GetTimerManager().ClearTimer(shakerLid->simHandle);
-		shakerLid->SetLidOff();
-		shakerLid->VRGripInterfaceSettings.bSimulateOnDrop = true;
-		shakerLid->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	}
-	// 잡은 대상이 ShakerStrainer 이라면
-	else if (GrabbedActorRight == shakerStrainer && shakerStrainer != nullptr)
-	{
-		isGrabbingShakerStrainerRight = true;
-		GetWorld()->GetTimerManager().ClearTimer(shakerStrainer->simHandle);
-		shakerStrainer->VRGripInterfaceSettings.bSimulateOnDrop = true;
-		shakerStrainer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	}
-	// 잡은 대상이 MixingGlass 라면
-	else if (GrabbedActorRight == mixingGlass && mixingGlass != nullptr)
-	{
-		isGrabbingMixingGlassRight = true;
-		mixingGlass->SetActorTickEnabled(true);
-		mixingGlass->isGrabbingMixingGlass = true;
-		mixingGlass->VRGripInterfaceSettings.bDenyGripping = true;
-		mixingGlass->VRGripInterfaceSettings.bSimulateOnDrop = true;
-	}
-	// 잡은 대상이 Glass Strainer 이라면
-	else if (GrabbedActorRight == strainer && strainer != nullptr)
-	{
-		isGrabbingStrainerRight = true;
-		GetWorld()->GetTimerManager().ClearTimer(strainer->simHandle);
-		strainer->VRGripInterfaceSettings.bSimulateOnDrop = true;
-		strainer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	}
-	// 잡은 대상이 DrinkCan 이라면
-	else if (GrabbedActorRight == drinkCan && drinkCan != nullptr)
-	{
-		isGrabbingDrinkCanRight = true;
-	}
-	// 잡은 대상이 halfSlicedLimeVat 이라면
-	else if (GrabbedActorRight == halfSlicedLimeVat && halfSlicedLimeVat != nullptr)
-	{
-		isGrabbingHalfSlicedLimeVatRight = true;
-		GetWorld()->GetTimerManager().ClearTimer(halfSlicedLimeVat->simHandle);
-	}
-	// 잡은 대상이 slicedLimeVat 이라면
-	else if (GrabbedActorRight == slicedLimeVat && slicedLimeVat != nullptr)
-	{
-		isGrabbingSlicedLimeVatRight = true;
-		GetWorld()->GetTimerManager().ClearTimer(slicedLimeVat->simHandle);
-	}
+		// 잡은 대상이 ShakerLid라면
+		else if(GrabbedActorRight==shakerLid&&shakerLid!=nullptr)
+		{
+			isGrabbingShakerLidRight=true;
+			GetWorld()->GetTimerManager().ClearTimer(shakerLid->simHandle);
+			shakerLid->SetLidOff();
+			shakerLid->VRGripInterfaceSettings.bSimulateOnDrop=true;
+			shakerLid->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		}
+		// 잡은 대상이 ShakerStrainer 이라면
+		else if(GrabbedActorRight==shakerStrainer&&shakerStrainer!=nullptr)
+		{
+			isGrabbingShakerStrainerRight=true;
+			GetWorld()->GetTimerManager().ClearTimer(shakerStrainer->simHandle);
+			shakerStrainer->VRGripInterfaceSettings.bSimulateOnDrop=true;
+			shakerStrainer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		}
+		// 잡은 대상이 MixingGlass 라면
+		else if(GrabbedActorRight==mixingGlass&&mixingGlass!=nullptr)
+		{
+			isGrabbingMixingGlassRight=true;
+			mixingGlass->SetActorTickEnabled(true);
+			mixingGlass->isGrabbingMixingGlass=true;
+			mixingGlass->VRGripInterfaceSettings.bDenyGripping=true;
+			mixingGlass->VRGripInterfaceSettings.bSimulateOnDrop=true;
+		}
+		// 잡은 대상이 Glass Strainer 이라면
+		else if(GrabbedActorRight==strainer&&strainer!=nullptr)
+		{
+			isGrabbingStrainerRight=true;
+			GetWorld()->GetTimerManager().ClearTimer(strainer->simHandle);
+			strainer->VRGripInterfaceSettings.bSimulateOnDrop=true;
+			strainer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		}
+		// 잡은 대상이 DrinkCan 이라면
+		else if(GrabbedActorRight==drinkCan&&drinkCan!=nullptr)
+		{
+			isGrabbingDrinkCanRight = true;
+		}
+		// 잡은 대상이 halfSlicedLimeVat 이라면
+		else if(GrabbedActorRight==halfSlicedLimeVat&&halfSlicedLimeVat!=nullptr)
+		{
+			isGrabbingHalfSlicedLimeVatRight = true;
+			GetWorld()->GetTimerManager().ClearTimer(halfSlicedLimeVat->simHandle);
+		}
+		// 잡은 대상이 slicedLimeVat 이라면
+		else if(GrabbedActorRight==slicedLimeVat&&slicedLimeVat!=nullptr)
+		{
+			isGrabbingSlicedLimeVatRight = true;
+			GetWorld()->GetTimerManager().ClearTimer(slicedLimeVat->simHandle);
+
+		}
 	// 잡은 대상이 halfSlicedOrangeVat 이라면
-	else if (GrabbedActorRight == halfSlicedOrangeVat && halfSlicedOrangeVat != nullptr)
+	else if(GrabbedActorRight==halfSlicedOrangeVat&&halfSlicedOrangeVat!=nullptr)
 	{
 		isGrabbingHalfSlicedOrangeVatRight = true;
 		GetWorld()->GetTimerManager().ClearTimer(halfSlicedOrangeVat->simHandle);
+
 	}
 	// 잡은 대상이 slicedOrangeVat 이라면
-	else if (GrabbedActorRight == slicedOrangeVat && slicedOrangeVat != nullptr)
+	else if(GrabbedActorRight==slicedOrangeVat&&slicedOrangeVat!=nullptr)
 	{
 		isGrabbingSlicedOrangeVatRight = true;
 		GetWorld()->GetTimerManager().ClearTimer(slicedOrangeVat->simHandle);
+
 	}
 	// 잡은 대상이 oliveVat 이라면
-	else if (GrabbedActorRight == oliveVat && oliveVat != nullptr)
+	else if(GrabbedActorRight==oliveVat&&oliveVat!=nullptr)
 	{
 		isGrabbingOliveVatRight = true;
 		GetWorld()->GetTimerManager().ClearTimer(oliveVat->simHandle);
+
 	}
 	// 잡은 대상이 iceCubeVat 이라면
-	else if (GrabbedActorRight == iceCubeVat && iceCubeVat != nullptr)
+	else if(GrabbedActorRight==iceCubeVat&&iceCubeVat!=nullptr)
 	{
 		isGrabbingIceCubeVatRight = true;
 		GetWorld()->GetTimerManager().ClearTimer(iceCubeVat->simHandle);
-	}
 
-	isDropped = false;
+	}
+	
+	isDropped=false;
 }
 
 void APlayerCharacter::CheckGrabbedObjectLeft()
 {
 	UGameplayStatics::PlaySound2D(GetWorld(), grabSound, 1.2, 1, 0);
 
-	// Haptic Feedback
-	if (PC)
-	{
-		PC->PlayHapticEffect(HF_GrabObjectLeft, EControllerHand::Left);
-	}
+		// Haptic Feedback
+		if (PC)
+		{
+			PC->PlayHapticEffect(HF_GrabObjectLeft, EControllerHand::Left);
+		}
 
 
 	TArray<AActor*> LeftGrippedActors;
 	LeftMotionController->GetGrippedActors(LeftGrippedActors);
-	for (int i = 0; i < LeftGrippedActors.Num(); ++i)
+	for(int i=0; i<LeftGrippedActors.Num(); ++i)
 	{
 		GrabbedActorLeft = LeftGrippedActors[i];
 	}
 
 	// Left Grabbed Actor Casting
-	huchuTongL = Cast<AHuchuTong>(GrabbedActorLeft);
+	huchuTongL=Cast<AHuchuTong>(GrabbedActorLeft);
 	bottleL = Cast<ABottleBase>(GrabbedActorLeft);
 	tabletL = Cast<ATablet>(GrabbedActorLeft);
-	coasterL = Cast<ACoaster>(GrabbedActorLeft);
-	cupL = Cast<ACupBase>(GrabbedActorLeft);
-	barSpoonL = Cast<ABarSpoon>(GrabbedActorLeft);
-	strainerL = Cast<AStrainer>(GrabbedActorLeft);
-	shakerStrainerL = Cast<AShakerStrainer>(GrabbedActorLeft);
-	shakerLidL = Cast<AShakerLid>(GrabbedActorLeft);
-	shakerL = Cast<AShaker>(GrabbedActorLeft);
-	mixingGlassL = Cast<AMixingGlass>(GrabbedActorLeft);
+	coasterL=Cast<ACoaster>(GrabbedActorLeft);
+	cupL=Cast<ACupBase>(GrabbedActorLeft);
+	barSpoonL=Cast<ABarSpoon>(GrabbedActorLeft);
+	strainerL=Cast<AStrainer>(GrabbedActorLeft);
+	shakerStrainerL=Cast<AShakerStrainer>(GrabbedActorLeft);
+	shakerLidL=Cast<AShakerLid>(GrabbedActorLeft);
+	shakerL=Cast<AShaker>(GrabbedActorLeft);
+	mixingGlassL=Cast<AMixingGlass>(GrabbedActorLeft);
 	drinkCanL = Cast<ADrinkCan>(GrabbedActorLeft);
 	slicedLimeVatL = Cast<ASlicedLimeVat>(GrabbedActorLeft);
 	halfSlicedLimeVatL = Cast<AHalfSlicedLimeVat>(GrabbedActorLeft);
@@ -396,155 +411,165 @@ void APlayerCharacter::CheckGrabbedObjectLeft()
 	halfSlicedOrangeVatL = Cast<AHalfSlicedOrangeVat>(GrabbedActorLeft);
 	oliveVatL = Cast<AOliveVat>(GrabbedActorLeft);
 	iceCubeVatL = Cast<AIceCubeVat>(GrabbedActorLeft);
-
+	
 	// 잡은 대상이 Tongs라면
-	if (GrabbedActorLeft == huchuTongL && huchuTongL != nullptr)
+	if(GrabbedActorLeft==huchuTongL&&huchuTongL!=nullptr)
 	{
-		isGrabbingTongsLeft = true;
+		isGrabbingTongsLeft=true;
 		GetWorld()->GetTimerManager().ClearTimer(huchuTongL->simHandle);
+
 	}
 	// 잡은 대상이 Bottle 이라면
-	else if (GrabbedActorLeft == bottleL && bottleL != nullptr)
+	else if(GrabbedActorLeft == bottleL&&bottleL!=nullptr)
 	{
 		isGrabbingBottleLeft = true;
 		GetWorld()->GetTimerManager().ClearTimer(bottleL->simHandle);
 		bottleL->SetActorTickEnabled(true);
-		bottleL->isGrabbingBottle = true;
-		bottleL->isGBL = true;
+		bottleL->isGrabbingBottle=true;
+		bottleL->isGBL=true;
 	}
 	// 잡은 대상이 Tablet 이라면
-	else if (GrabbedActorLeft == tabletL && tabletL != nullptr)
+	else if(GrabbedActorLeft==tabletL&&tabletL!=nullptr)
 	{
-		isGrabbingTabletLeft = true;
+		isGrabbingTabletLeft=true;
 		GetWorld()->GetTimerManager().ClearTimer(tabletL->simHandle);
 		tabletL->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-		tabletL->VRGripInterfaceSettings.bSimulateOnDrop = true;
+		tabletL->VRGripInterfaceSettings.bSimulateOnDrop=true;
 		//widgetInteractionComp->bShowDebug=true;
 		//widgetInteractionCompLeft->bShowDebug=false;
-	}
+	}		
 	// 잡은 대상이 Coaster이라면
-	else if (GrabbedActorLeft == coasterL && coasterL != nullptr)
+	else if(GrabbedActorLeft==coasterL&&coasterL!=nullptr)
 	{
-		isGrabbingCoasterLeft = true;
+		isGrabbingCoasterLeft=true;
 		GetWorld()->GetTimerManager().ClearTimer(coasterL->simHandle);
 		coasterL->boxComp->SetCollisionProfileName(FName("CoasterAfterGrab"));
+
 	}
 	// 잡은 대상이 Shaker이라면
-	else if (GrabbedActorLeft == shakerL && shakerL != nullptr)
+	else if(GrabbedActorLeft==shakerL&&shakerL!=nullptr)
 	{
-		isGrabbingShakerLeft = true;
-		shakerL->isGSL = true;
+		isGrabbingShakerLeft=true;
+		shakerL->isGSL=true;
 		shakerL->SetActorTickEnabled(true);
-		shakerL->isGrabbingShaker = true;
-		shakerL->VRGripInterfaceSettings.bDenyGripping = true;
+		shakerL->isGrabbingShaker=true;
+		shakerL->VRGripInterfaceSettings.bDenyGripping=true;
+		
 	}
 	// 잡은 대상이 Cup이라면
-	else if (GrabbedActorLeft == cupL && cupL != nullptr)
+	else if(GrabbedActorLeft==cupL&&cupL!=nullptr)
 	{
-		isGrabbingCupLeft = true;
+		isGrabbingCupLeft=true;
 		GetWorld()->GetTimerManager().ClearTimer(cupL->simHandle);
 		cupL->SetActorTickEnabled(true);
-		cupL->isCupTickActivated = true;
+		cupL->isCupTickActivated=true;
 	}
 	// 잡은 대상이 BarSpoon이라면
-	else if (GrabbedActorLeft == barSpoonL && barSpoonL != nullptr)
+	else if(GrabbedActorLeft==barSpoonL&&barSpoonL!=nullptr)
 	{
-		isGrabbingBarSpoonLeft = true;
+		isGrabbingBarSpoonLeft=true;
 		barSpoonL->meshComp->SetCollisionProfileName(FName("SpoonGrabbed"));
+
 	}
 
 	// 잡은 대상이 ShakerLid라면
-	else if (GrabbedActorLeft == shakerLidL && shakerLidL != nullptr)
+	else if(GrabbedActorLeft==shakerLidL&&shakerLidL!=nullptr)
 	{
-		isGrabbingShakerLidLeft = true;
+		isGrabbingShakerLidLeft=true;
 		GetWorld()->GetTimerManager().ClearTimer(shakerLidL->simHandle);
 		shakerLidL->SetLidOff();
-		shakerLidL->VRGripInterfaceSettings.bSimulateOnDrop = true;
+		shakerLidL->VRGripInterfaceSettings.bSimulateOnDrop=true;
 		shakerLidL->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	}
 	// 잡은 대상이 ShakerStrainer 이라면
-	else if (GrabbedActorLeft == shakerStrainerL && shakerStrainerL != nullptr)
+	else if(GrabbedActorLeft==shakerStrainerL&&shakerStrainerL!=nullptr)
 	{
-		isGrabbingShakerStrainerLeft = true;
+		isGrabbingShakerStrainerLeft=true;
 		GetWorld()->GetTimerManager().ClearTimer(shakerStrainerL->simHandle);
 		shakerStrainerL->isStrainerAttachable = false;
 		shakerStrainerL->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	}
 	// 잡은 대상이 MixingGlass 라면
-	else if (GrabbedActorLeft == mixingGlassL && mixingGlassL != nullptr)
+	else if(GrabbedActorLeft==mixingGlassL&&mixingGlassL!=nullptr)
 	{
-		isGrabbingMixingGlassLeft = true;
+		isGrabbingMixingGlassLeft=true;
 		mixingGlassL->SetActorTickEnabled(true);
-		mixingGlassL->isGrabbingMixingGlass = true;
-		mixingGlassL->VRGripInterfaceSettings.bDenyGripping = true;
-		mixingGlassL->VRGripInterfaceSettings.bSimulateOnDrop = true;
+		mixingGlassL->isGrabbingMixingGlass=true;
+		mixingGlassL->VRGripInterfaceSettings.bDenyGripping=true;
+		mixingGlassL->VRGripInterfaceSettings.bSimulateOnDrop=true;
 	}
 	// 잡은 대상이 Glass Strainer 이라면
-	else if (GrabbedActorLeft == strainerL && strainerL != nullptr)
+	else if(GrabbedActorLeft==strainerL&&strainerL!=nullptr)
 	{
-		isGrabbingStrainerLeft = true;
+		isGrabbingStrainerLeft=true;
 		GetWorld()->GetTimerManager().ClearTimer(strainerL->simHandle);
-		strainerL->VRGripInterfaceSettings.bSimulateOnDrop = true;
+		strainerL->VRGripInterfaceSettings.bSimulateOnDrop=true;
 		strainerL->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	}
+ 	}
 	// 잡은 대상이 DrinkCan 이라면
-	else if (GrabbedActorLeft == drinkCanL && drinkCanL != nullptr)
+	else if(GrabbedActorLeft==drinkCanL&&drinkCanL!=nullptr)
 	{
 		isGrabbingDrinkCanLeft = true;
 	}
 	// 잡은 대상이 halfSlicedLimeVat 이라면
-	else if (GrabbedActorLeft == halfSlicedLimeVatL && halfSlicedLimeVatL != nullptr)
+	else if(GrabbedActorLeft==halfSlicedLimeVatL&&halfSlicedLimeVatL!=nullptr)
 	{
 		isGrabbingHalfSlicedLimeVatLeft = true;
 		GetWorld()->GetTimerManager().ClearTimer(halfSlicedLimeVatL->simHandle);
+
 	}
 	// 잡은 대상이 slicedLimeVat 이라면
-	else if (GrabbedActorLeft == slicedLimeVatL && slicedLimeVatL != nullptr)
+	else if(GrabbedActorLeft==slicedLimeVatL&&slicedLimeVatL!=nullptr)
 	{
 		isGrabbingSlicedLimeVatLeft = true;
 		GetWorld()->GetTimerManager().ClearTimer(slicedLimeVatL->simHandle);
+
 	}
 	// 잡은 대상이 halfSlicedOrangeVat 이라면
-	else if (GrabbedActorLeft == halfSlicedOrangeVatL && halfSlicedOrangeVatL != nullptr)
+	else if(GrabbedActorLeft==halfSlicedOrangeVatL&&halfSlicedOrangeVatL!=nullptr)
 	{
 		isGrabbingHalfSlicedOrangeVatLeft = true;
 		GetWorld()->GetTimerManager().ClearTimer(halfSlicedOrangeVatL->simHandle);
+
 	}
 	// 잡은 대상이 slicedOrangeVat 이라면
-	else if (GrabbedActorLeft == slicedOrangeVatL && slicedOrangeVatL != nullptr)
+	else if(GrabbedActorLeft==slicedOrangeVatL&&slicedOrangeVatL!=nullptr)
 	{
 		isGrabbingSlicedOrangeVatLeft = true;
 		GetWorld()->GetTimerManager().ClearTimer(slicedOrangeVatL->simHandle);
+
 	}
 	// 잡은 대상이 oliveVat 이라면
-	else if (GrabbedActorLeft == oliveVatL && oliveVatL != nullptr)
+	else if(GrabbedActorLeft==oliveVatL&&oliveVatL!=nullptr)
 	{
 		isGrabbingOliveVatLeft = true;
 		GetWorld()->GetTimerManager().ClearTimer(oliveVatL->simHandle);
+
 	}
 	// 잡은 대상이 iceCubeVat 이라면
-	else if (GrabbedActorLeft == iceCubeVatL && iceCubeVatL != nullptr)
+	else if(GrabbedActorLeft==iceCubeVatL&&iceCubeVatL!=nullptr)
 	{
 		isGrabbingIceCubeVatLeft = true;
 		GetWorld()->GetTimerManager().ClearTimer(iceCubeVatL->simHandle);
+
 	}
 
-	isDropped = false;
+	isDropped=false;
 }
 
 void APlayerCharacter::CheckDroppedObjectRight()
 {
 	// 오른손에 Tongs를 잡고 있었다면
-	if (isGrabbingTongsRight)
+	if(isGrabbingTongsRight)
 	{
-		huchuTong->isDropSoundEnabled = true;
+		huchuTong->isDropSoundEnabled=true;
 		// Tongs에 잡혀 있는 대상이 있었다면
-		if (isGrabbingWithTongsRight)
+		if(isGrabbingWithTongsRight)
 		{
 			FLatentActionInfo LatentInfo;
 			LatentInfo.CallbackTarget = this;
 			auto tongCompRef = huchuTong->tongRight;
-			UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation() + FRotator(-5, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
+			UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-5, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
 			isTongsTickEnabled = true;
 			// 1. 잡지않은 상태로 전환
 			isGrabbingWithTongsRight = false;
@@ -557,163 +582,176 @@ void APlayerCharacter::CheckDroppedObjectRight()
 			GrabbedObjectWithTongsRight = nullptr;
 		}
 		huchuTong->SetSimulateAndTickDisable();
-		isGrabbingTongsRight = false;
+		isGrabbingTongsRight=false;
 	}
-	else if (isGrabbingBottleRight)
+	else if(isGrabbingBottleRight)
 	{
-		if (bottle != nullptr)
+		if(bottle!=nullptr)
 		{
-			bottle->isGrabbingBottle = false;
-			bottle->isGBR = false;
-			bottle->isDropSoundEnabled = true;
+			bottle->isGrabbingBottle=false;
+			bottle->isGBR=false;
+			bottle->isDropSoundEnabled=true;
 			bottle->SetSimulateAndTickDisable();
 		}
-		isGrabbingBottleRight = false;
+		isGrabbingBottleRight=false;
 	}
-	else if (isGrabbingTabletRight)
+	else if(isGrabbingTabletRight)
 	{
-		if (tablet != nullptr)
+		if(tablet!=nullptr)
 		{
-			tablet->isDropSoundEnabled = true;
+			tablet->isDropSoundEnabled=true;
 			tablet->AttachToTabletStand();
 			tablet->SetSimulateAndTickDisable();
+
 		}
-		isGrabbingTabletRight = false;
+		isGrabbingTabletRight=false;
 		//widgetInteractionComp->bShowDebug=false;
 		//widgetInteractionCompLeft->bShowDebug=false;
 	}
-	else if (isGrabbingCoasterRight)
+	else if(isGrabbingCoasterRight)
 	{
-		if (coaster != nullptr)
+		if(coaster!=nullptr)
 		{
-			coaster->isDropSoundEnabled = true;
+			coaster->isDropSoundEnabled=true;
 			coaster->boxComp->SetCollisionProfileName(FName("CoasterBeforeGrab"));
 			coaster->SetSimulateAndTickDisable();
+
 		}
-		isGrabbingCoasterRight = false;
+		isGrabbingCoasterRight=false;
 	}
-	else if (isGrabbingShakerRight)
+	else if(isGrabbingShakerRight)
 	{
-		if (shaker != nullptr)
+		if(shaker!=nullptr)
 		{
-			shaker->isGSR = false;
-			shaker->isDropSoundEnabled = true;
-			shaker->VRGripInterfaceSettings.bDenyGripping = false;
-			shaker->isGrabbingShaker = false;
+			shaker->isGSR=false;
+			shaker->isDropSoundEnabled=true;			
+			shaker->VRGripInterfaceSettings.bDenyGripping=false;
+			shaker->isGrabbingShaker=false;
+		
 		}
-		isGrabbingShakerRight = false;
+		isGrabbingShakerRight=false;		
 	}
-	else if (isGrabbingCupRight)
+	else if(isGrabbingCupRight)
 	{
-		if (cup != nullptr)
+		if(cup!=nullptr)
 		{
-			cup->isDropSoundEnabled = true;
-			cup->isCupTickActivated = false;
+			cup->isDropSoundEnabled=true;
+			cup->isCupTickActivated=false;
 			cup->SetSimulateAndTickDisable();
 		}
-		isGrabbingCupRight = false;
+		isGrabbingCupRight=false;
 	}
-	else if (isGrabbingBarSpoonRight)
+	else if(isGrabbingBarSpoonRight)
 	{
-		if (barSpoon != nullptr)
+		if(barSpoon!=nullptr)
 		{
-			barSpoon->isDropSoundEnabled = true;
+			barSpoon->isDropSoundEnabled=true;
 			barSpoon->meshComp->SetCollisionProfileName(FName("Spoon"));
 		}
-		isGrabbingBarSpoonRight = false;
+		isGrabbingBarSpoonRight=false;
 	}
-	else if (isGrabbingShakerLidRight)
+	else if(isGrabbingShakerLidRight)
 	{
-		if (shakerLid != nullptr)
+		if(shakerLid!=nullptr)
 		{
-			shakerLid->isDropSoundEnabled = true;
+			shakerLid->isDropSoundEnabled=true;
 			shakerLid->AttachToShakerStrainer();
 			shakerLid->SetSimulateAndTickDisable();
+
 		}
-		isGrabbingShakerLidRight = false;
+		isGrabbingShakerLidRight=false;	
 	}
-	else if (isGrabbingShakerStrainerRight)
+	else if(isGrabbingShakerStrainerRight)
 	{
-		if (shakerStrainer != nullptr)
+		if(shakerStrainer!=nullptr)
 		{
-			shakerStrainer->isDropSoundEnabled = true;
+			shakerStrainer->isDropSoundEnabled=true;
 			shakerStrainer->AttachToShaker();
 			shakerStrainer->SetSimulateAndTickDisable();
+
 		}
-		isGrabbingShakerStrainerRight = false;
+		isGrabbingShakerStrainerRight=false;
+	
 	}
-	else if (isGrabbingMixingGlassRight)
+	else if(isGrabbingMixingGlassRight)
 	{
-		if (mixingGlass != nullptr)
+		if(mixingGlass!=nullptr)
 		{
-			mixingGlass->isDropSoundEnabled = true;
-			mixingGlass->VRGripInterfaceSettings.bDenyGripping = false;
-			mixingGlass->isGrabbingMixingGlass = false;
+			mixingGlass->isDropSoundEnabled=true;
+			mixingGlass->VRGripInterfaceSettings.bDenyGripping=false;
+			mixingGlass->isGrabbingMixingGlass=false;
 		}
-		isGrabbingMixingGlassRight = false;
+		isGrabbingMixingGlassRight=false;
 	}
-	else if (isGrabbingStrainerRight)
+	else if(isGrabbingStrainerRight)
 	{
-		if (strainer != nullptr)
+		if(strainer!=nullptr)
 		{
-			strainer->isDropSoundEnabled = true;
+			strainer->isDropSoundEnabled=true;
 			strainer->AttachToMixingGlass();
 			strainer->SetSimulateAndTickDisable();
+
 		}
-		isGrabbingStrainerRight = false;
+		isGrabbingStrainerRight=false;	
 	}
 
-	else if (isGrabbingDrinkCanRight && drinkCan != nullptr)
+	else if(isGrabbingDrinkCanRight&&drinkCan!=nullptr)
 	{
-		drinkCan->isDropSoundEnabled = true;
+		drinkCan->isDropSoundEnabled=true;
 	}
-	else if (isGrabbingHalfSlicedLimeVatRight && halfSlicedLimeVat != nullptr)
+	else if(isGrabbingHalfSlicedLimeVatRight&&halfSlicedLimeVat!=nullptr)
 	{
-		halfSlicedLimeVat->isDropSoundEnabled = true;
+		halfSlicedLimeVat->isDropSoundEnabled=true;
 		halfSlicedLimeVat->SetSimulateAndTickDisable();
+
 	}
-	else if (isGrabbingSlicedLimeVatRight && slicedLimeVat != nullptr)
+	else if(isGrabbingSlicedLimeVatRight&&slicedLimeVat!=nullptr)
 	{
-		slicedLimeVat->isDropSoundEnabled = true;
+		slicedLimeVat->isDropSoundEnabled=true;
 		slicedLimeVat->SetSimulateAndTickDisable();
+
 	}
-	else if (isGrabbingHalfSlicedOrangeVatRight && halfSlicedOrangeVat != nullptr)
+	else if(isGrabbingHalfSlicedOrangeVatRight&&halfSlicedOrangeVat!=nullptr)
 	{
-		halfSlicedOrangeVat->isDropSoundEnabled = true;
+		halfSlicedOrangeVat->isDropSoundEnabled=true;
 		halfSlicedOrangeVat->SetSimulateAndTickDisable();
+
 	}
-	else if (isGrabbingSlicedOrangeVatRight && slicedOrangeVat != nullptr)
+	else if(isGrabbingSlicedOrangeVatRight&&slicedOrangeVat!=nullptr)
 	{
-		slicedOrangeVat->isDropSoundEnabled = true;
+		slicedOrangeVat->isDropSoundEnabled=true;
 		slicedOrangeVat->SetSimulateAndTickDisable();
+
 	}
-	else if (isGrabbingOliveVatRight && oliveVat != nullptr)
+	else if(isGrabbingOliveVatRight&&oliveVat!=nullptr)
 	{
-		oliveVat->isDropSoundEnabled = true;
+		oliveVat->isDropSoundEnabled=true;
 		oliveVat->SetSimulateAndTickDisable();
+
 	}
-	else if (isGrabbingIceCubeVatRight && iceCubeVat != nullptr)
+	else if(isGrabbingIceCubeVatRight&&iceCubeVat!=nullptr)
 	{
-		iceCubeVat->isDropSoundEnabled = true;
+		iceCubeVat->isDropSoundEnabled=true;
 		iceCubeVat->SetSimulateAndTickDisable();
+
 	}
 
-	isDropped = true;
+	isDropped=true;
 }
 
 void APlayerCharacter::CheckDroppedObjectLeft()
 {
 	// 왼손에 Tongs를 잡고 있었다면
-	if (isGrabbingTongsLeft)
+	if(isGrabbingTongsLeft)
 	{
-		huchuTongL->isDropSoundEnabled = true;
+		huchuTongL->isDropSoundEnabled=true;
 		// Tongs에 잡혀 있는 대상이 있었다면
-		if (isGrabbingWithTongsLeft)
+		if(isGrabbingWithTongsLeft)
 		{
 			FLatentActionInfo LatentInfo;
 			LatentInfo.CallbackTarget = this;
 			auto tongCompRef = huchuTongL->tongRight;
-			UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation() + FRotator(-5, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
+			UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-5, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
 			isTongsTickEnabledL = true;
 			// 1. 잡지않은 상태로 전환
 			isGrabbingWithTongsLeft = false;
@@ -726,137 +764,146 @@ void APlayerCharacter::CheckDroppedObjectLeft()
 			GrabbedObjectWithTongsLeft = nullptr;
 		}
 		huchuTongL->SetSimulateAndTickDisable();
-		isGrabbingTongsLeft = false;
+		isGrabbingTongsLeft=false;
 	}
-	else if (isGrabbingBottleLeft && bottleL != nullptr)
+	else if(isGrabbingBottleLeft&&bottleL!=nullptr)
 	{
-		bottleL->isDropSoundEnabled = true;
-		bottleL->isGBL = false;
-		bottleL->isGrabbingBottle = false;
+		bottleL->isDropSoundEnabled=true;
+		bottleL->isGBL=false;
+		bottleL->isGrabbingBottle=false;
 		bottleL->SetSimulateAndTickDisable();
-		isGrabbingBottleLeft = false;
+		isGrabbingBottleLeft=false;
 	}
-	else if (isGrabbingTabletLeft && tabletL != nullptr)
+	else if(isGrabbingTabletLeft&&tabletL!=nullptr)
 	{
-		isGrabbingTabletLeft = false;
+		isGrabbingTabletLeft=false;
 		tabletL->AttachToTabletStand();
-		tabletL->isDropSoundEnabled = true;
+		tabletL->isDropSoundEnabled=true;
 		tabletL->SetSimulateAndTickDisable();
 
 		//widgetInteractionComp->bShowDebug=false;
 		//widgetInteractionCompLeft->bShowDebug=false;
 	}
-	else if (isGrabbingCoasterLeft && coasterL != nullptr)
+	else if(isGrabbingCoasterLeft&&coasterL!=nullptr)
 	{
-		coasterL->isDropSoundEnabled = true;
+		coasterL->isDropSoundEnabled=true;
 		coasterL->boxComp->SetCollisionProfileName(FName("CoasterBeforeGrab"));
 		coasterL->SetSimulateAndTickDisable();
 
-		isGrabbingCoasterLeft = false;
+		isGrabbingCoasterLeft=false;
 	}
-	else if (isGrabbingBarSpoonLeft && barSpoonL != nullptr)
+	else if(isGrabbingBarSpoonLeft&&barSpoonL!=nullptr)
 	{
-		barSpoonL->isDropSoundEnabled = true;
+		barSpoonL->isDropSoundEnabled=true;
 		barSpoonL->meshComp->SetCollisionProfileName(FName("Spoon"));
+
 	}
-	else if (isGrabbingShakerLeft && shakerL != nullptr)
+	else if(isGrabbingShakerLeft&&shakerL!=nullptr)
 	{
-		shakerL->isGSL = false;
-		shakerL->VRGripInterfaceSettings.bDenyGripping = false;
-		shakerL->isDropSoundEnabled = true;
-		shakerL->isGrabbingShaker = false;
-		isGrabbingShakerLeft = false;
+		shakerL->isGSL=false;
+		shakerL->VRGripInterfaceSettings.bDenyGripping=false;
+		shakerL->isDropSoundEnabled=true;
+		shakerL->isGrabbingShaker=false;		
+		isGrabbingShakerLeft=false;		
 	}
-	else if (isGrabbingCupLeft && cupL != nullptr)
+	else if(isGrabbingCupLeft&&cupL!=nullptr)
 	{
-		cupL->isDropSoundEnabled = true;
-		cupL->isCupTickActivated = false;
+		cupL->isDropSoundEnabled=true;
+		cupL->isCupTickActivated=false;
 		cupL->SetSimulateAndTickDisable();
-		isGrabbingCupLeft = false;
+		isGrabbingCupLeft=false;
 	}
-	else if (isGrabbingShakerLidLeft && shakerLidL != nullptr)
-	{
-		shakerLidL->isDropSoundEnabled = true;
+	else if(isGrabbingShakerLidLeft&&shakerLidL!=nullptr)
+	{			
+		shakerLidL->isDropSoundEnabled=true;
 		shakerLidL->AttachToShakerStrainer();
 		shakerLidL->SetSimulateAndTickDisable();
 
-		isGrabbingShakerLidLeft = false;
+		isGrabbingShakerLidLeft=false;	
 	}
-	else if (isGrabbingShakerStrainerLeft && shakerStrainerL != nullptr)
-	{
-		shakerStrainerL->isDropSoundEnabled = true;
+	else if(isGrabbingShakerStrainerLeft&&shakerStrainerL!=nullptr)
+	{	
+		shakerStrainerL->isDropSoundEnabled=true;
 		shakerStrainerL->AttachToShaker();
 		shakerStrainerL->SetSimulateAndTickDisable();
 
-		isGrabbingShakerStrainerLeft = false;
+		isGrabbingShakerStrainerLeft=false;
+	
 	}
-	else if (isGrabbingMixingGlassLeft && mixingGlassL != nullptr)
+	else if(isGrabbingMixingGlassLeft&&mixingGlassL!=nullptr)
 	{
-		mixingGlassL->VRGripInterfaceSettings.bDenyGripping = false;
-		mixingGlassL->isDropSoundEnabled = true;
-		mixingGlassL->isGrabbingMixingGlass = false;
-		isGrabbingMixingGlassLeft = false;
+		mixingGlassL->VRGripInterfaceSettings.bDenyGripping=false;
+		mixingGlassL->isDropSoundEnabled=true;
+		mixingGlassL->isGrabbingMixingGlass=false;
+		isGrabbingMixingGlassLeft=false;
 	}
-	else if (isGrabbingStrainerLeft && strainerL != nullptr)
+	else if(isGrabbingStrainerLeft&&strainerL!=nullptr)
 	{
-		strainerL->isDropSoundEnabled = true;
+		strainerL->isDropSoundEnabled=true;
 		strainerL->AttachToMixingGlass();
 		strainerL->SetSimulateAndTickDisable();
 
-		isGrabbingStrainerLeft = false;
+		isGrabbingStrainerLeft=false;	
 	}
 
-	else if (isGrabbingDrinkCanLeft && drinkCanL != nullptr)
+	else if(isGrabbingDrinkCanLeft&&drinkCanL!=nullptr)
 	{
-		drinkCanL->isDropSoundEnabled = true;
+		drinkCanL->isDropSoundEnabled=true;
 	}
-	else if (isGrabbingHalfSlicedLimeVatLeft && halfSlicedLimeVatL != nullptr)
+	else if(isGrabbingHalfSlicedLimeVatLeft&&halfSlicedLimeVatL!=nullptr)
 	{
-		halfSlicedLimeVatL->isDropSoundEnabled = true;
+		halfSlicedLimeVatL->isDropSoundEnabled=true;
 		halfSlicedLimeVatL->SetSimulateAndTickDisable();
-	}
-	else if (isGrabbingSlicedLimeVatLeft && slicedLimeVatL != nullptr)
-	{
-		slicedLimeVatL->isDropSoundEnabled = true;
-		slicedLimeVatL->SetSimulateAndTickDisable();
-	}
-	else if (isGrabbingHalfSlicedOrangeVatLeft && halfSlicedOrangeVatL != nullptr)
-	{
-		halfSlicedOrangeVatL->isDropSoundEnabled = true;
-		halfSlicedOrangeVatL->SetSimulateAndTickDisable();
-	}
-	else if (isGrabbingSlicedOrangeVatLeft && slicedOrangeVatL != nullptr)
-	{
-		slicedOrangeVatL->isDropSoundEnabled = true;
-		slicedOrangeVatL->SetSimulateAndTickDisable();
-	}
-	else if (isGrabbingOliveVatLeft && oliveVatL != nullptr)
-	{
-		oliveVatL->isDropSoundEnabled = true;
-		oliveVatL->SetSimulateAndTickDisable();
-	}
-	else if (isGrabbingIceCubeVatLeft && iceCubeVatL != nullptr)
-	{
-		iceCubeVatL->isDropSoundEnabled = true;
-		iceCubeVatL->SetSimulateAndTickDisable();
-	}
 
-	isDropped = true;
+	}
+	else if(isGrabbingSlicedLimeVatLeft&&slicedLimeVatL!=nullptr)
+	{
+		slicedLimeVatL->isDropSoundEnabled=true;
+		slicedLimeVatL->SetSimulateAndTickDisable();
+
+	}
+	else if(isGrabbingHalfSlicedOrangeVatLeft&&halfSlicedOrangeVatL!=nullptr)
+	{
+		halfSlicedOrangeVatL->isDropSoundEnabled=true;
+		halfSlicedOrangeVatL->SetSimulateAndTickDisable();
+
+	}
+	else if(isGrabbingSlicedOrangeVatLeft&&slicedOrangeVatL!=nullptr)
+	{
+		slicedOrangeVatL->isDropSoundEnabled=true;
+		slicedOrangeVatL->SetSimulateAndTickDisable();
+
+	}
+	else if(isGrabbingOliveVatLeft&&oliveVatL!=nullptr)
+	{
+		oliveVatL->isDropSoundEnabled=true;
+		oliveVatL->SetSimulateAndTickDisable();
+
+	}
+	else if(isGrabbingIceCubeVatLeft&&iceCubeVatL!=nullptr)
+	{
+		iceCubeVatL->isDropSoundEnabled=true;
+		iceCubeVatL->SetSimulateAndTickDisable();
+
+	}
+	
+	isDropped=true;
+
 }
 
 void APlayerCharacter::DestroyDroppedObjectRight()
 {
 	// 오른손에 Tongs를 잡고 있었다면
-	if (isGrabbingTongsRight)
+	if(isGrabbingTongsRight)
 	{
-		huchuTong->isDropSoundEnabled = true;
+		huchuTong->isDropSoundEnabled=true;
 		// Tongs에 잡혀 있는 대상이 있었다면
-		if (isGrabbingWithTongsRight)
+		if(isGrabbingWithTongsRight)
 		{
 			FLatentActionInfo LatentInfo;
 			LatentInfo.CallbackTarget = this;
 			auto tongCompRef = huchuTong->tongRight;
-			UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation() + FRotator(-5, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
+			UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-5, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
 			isTongsTickEnabled = true;
 			// 1. 잡지않은 상태로 전환
 			isGrabbingWithTongsRight = false;
@@ -869,237 +916,212 @@ void APlayerCharacter::DestroyDroppedObjectRight()
 			GrabbedObjectWithTongsRight = nullptr;
 		}
 		huchuTong->SetSimulateAndTickDisable();
-		isGrabbingTongsRight = false;
-
-		if (huchuTong)
-		{
-			huchuTong->Destroy();
-		}
+		isGrabbingTongsRight=false;
+		
+		if(huchuTong)
+		huchuTong->Destroy();
 	}
-	else if (isGrabbingBottleRight)
+	else if(isGrabbingBottleRight)
 	{
-		if (bottle != nullptr)
+		if(bottle!=nullptr)
 		{
-			bottle->isGrabbingBottle = false;
-			bottle->isGBR = false;
-			bottle->isDropSoundEnabled = true;
+			bottle->isGrabbingBottle=false;
+			bottle->isGBR=false;
+			bottle->isDropSoundEnabled=true;
 			bottle->SetSimulateAndTickDisable();
 		}
-		isGrabbingBottleRight = false;
+		isGrabbingBottleRight=false;
 
-		if (bottle)
-		{
+		if(bottle)
 			bottle->Destroy();
-		}
 	}
-	else if (isGrabbingTabletRight)
+	else if(isGrabbingTabletRight)
 	{
-		if (tablet != nullptr)
+		if(tablet!=nullptr)
 		{
-			tablet->isDropSoundEnabled = true;
+			tablet->isDropSoundEnabled=true;
 			tablet->AttachToTabletStand();
 			tablet->SetSimulateAndTickDisable();
+
 		}
-		isGrabbingTabletRight = false;
+		isGrabbingTabletRight=false;
 		//widgetInteractionComp->bShowDebug=false;
 		//widgetInteractionCompLeft->bShowDebug=false;
-		if (tablet)
-		{
+		if(tablet)
 			tablet->Destroy();
-		}
 	}
-	else if (isGrabbingCoasterRight)
+	else if(isGrabbingCoasterRight)
 	{
-		if (coaster != nullptr)
+		if(coaster!=nullptr)
 		{
-			coaster->isDropSoundEnabled = true;
+			coaster->isDropSoundEnabled=true;
 			coaster->boxComp->SetCollisionProfileName(FName("CoasterBeforeGrab"));
 			coaster->SetSimulateAndTickDisable();
+
 		}
-		isGrabbingCoasterRight = false;
-		if (coaster)
-		{
+		isGrabbingCoasterRight=false;
+		if(coaster)
 			coaster->Destroy();
-		}
 	}
-	else if (isGrabbingShakerRight)
+	else if(isGrabbingShakerRight)
 	{
-		if (shaker != nullptr)
+		if(shaker!=nullptr)
 		{
-			shaker->isGSR = false;
-			shaker->isDropSoundEnabled = true;
-			shaker->VRGripInterfaceSettings.bDenyGripping = false;
-			shaker->isGrabbingShaker = false;
+			shaker->isGSR=false;
+			shaker->isDropSoundEnabled=true;			
+			shaker->VRGripInterfaceSettings.bDenyGripping=false;
+			shaker->isGrabbingShaker=false;
+		
 		}
-		isGrabbingShakerRight = false;
-		if (shaker)
-		{
+		isGrabbingShakerRight=false;
+		if(shaker)
 			shaker->Destroy();
-		}
 	}
-	else if (isGrabbingCupRight)
+	else if(isGrabbingCupRight)
 	{
-		if (cup != nullptr)
+		if(cup!=nullptr)
 		{
-			cup->isDropSoundEnabled = true;
-			cup->isCupTickActivated = false;
+			cup->isDropSoundEnabled=true;
+			cup->isCupTickActivated=false;
 			cup->SetSimulateAndTickDisable();
 		}
-		isGrabbingCupRight = false;
-		if (cup)
-		{
+		isGrabbingCupRight=false;
+		if(cup)
 			cup->Destroy();
-		}
 	}
-	else if (isGrabbingBarSpoonRight)
+	else if(isGrabbingBarSpoonRight)
 	{
-		if (barSpoon != nullptr)
+		if(barSpoon!=nullptr)
 		{
-			barSpoon->isDropSoundEnabled = true;
+			barSpoon->isDropSoundEnabled=true;
 			barSpoon->meshComp->SetCollisionProfileName(FName("Spoon"));
 		}
-		isGrabbingBarSpoonRight = false;
-		if (barSpoon)
-		{
+		isGrabbingBarSpoonRight=false;
+		if(barSpoon)
 			barSpoon->Destroy();
-		}
 	}
-	else if (isGrabbingShakerLidRight)
+	else if(isGrabbingShakerLidRight)
 	{
-		if (shakerLid != nullptr)
+		if(shakerLid!=nullptr)
 		{
-			shakerLid->isDropSoundEnabled = true;
+			shakerLid->isDropSoundEnabled=true;
 			shakerLid->AttachToShakerStrainer();
 			shakerLid->SetSimulateAndTickDisable();
+
 		}
-		isGrabbingShakerLidRight = false;
-		if (shakerLid)
-		{
+		isGrabbingShakerLidRight=false;
+		if(shakerLid)
 			shakerLid->Destroy();
-		}
 	}
-	else if (isGrabbingShakerStrainerRight)
+	else if(isGrabbingShakerStrainerRight)
 	{
-		if (shakerStrainer != nullptr)
+		if(shakerStrainer!=nullptr)
 		{
-			shakerStrainer->isDropSoundEnabled = true;
+			shakerStrainer->isDropSoundEnabled=true;
 			shakerStrainer->AttachToShaker();
 			shakerStrainer->SetSimulateAndTickDisable();
+
 		}
-		isGrabbingShakerStrainerRight = false;
-		if (shakerStrainer)
-		{
+		isGrabbingShakerStrainerRight=false;
+		if(shakerStrainer)
 			shakerStrainer->Destroy();
-		}
+	
 	}
-	else if (isGrabbingMixingGlassRight)
+	else if(isGrabbingMixingGlassRight)
 	{
-		if (mixingGlass != nullptr)
+		if(mixingGlass!=nullptr)
 		{
-			mixingGlass->isDropSoundEnabled = true;
-			mixingGlass->VRGripInterfaceSettings.bDenyGripping = false;
-			mixingGlass->isGrabbingMixingGlass = false;
+			mixingGlass->isDropSoundEnabled=true;
+			mixingGlass->VRGripInterfaceSettings.bDenyGripping=false;
+			mixingGlass->isGrabbingMixingGlass=false;
 		}
-		isGrabbingMixingGlassRight = false;
-		if (mixingGlass)
-		{
+		isGrabbingMixingGlassRight=false;
+		if(mixingGlass)
 			mixingGlass->Destroy();
-		}
 	}
-	else if (isGrabbingStrainerRight)
+	else if(isGrabbingStrainerRight)
 	{
-		if (strainer != nullptr)
+		if(strainer!=nullptr)
 		{
-			strainer->isDropSoundEnabled = true;
+			strainer->isDropSoundEnabled=true;
 			strainer->AttachToMixingGlass();
 			strainer->SetSimulateAndTickDisable();
+
 		}
-		isGrabbingStrainerRight = false;
-		if (strainer)
-		{
+		isGrabbingStrainerRight=false;
+		if(strainer)
 			strainer->Destroy();
-		}
 	}
 
-	else if (isGrabbingDrinkCanRight && drinkCan != nullptr)
+	else if(isGrabbingDrinkCanRight&&drinkCan!=nullptr)
 	{
-		drinkCan->isDropSoundEnabled = true;
-		if (drinkCan)
-		{
+		drinkCan->isDropSoundEnabled=true;
+		if(drinkCan)
 			drinkCan->Destroy();
-		}
 	}
-	else if (isGrabbingHalfSlicedLimeVatRight && halfSlicedLimeVat != nullptr)
+	else if(isGrabbingHalfSlicedLimeVatRight&&halfSlicedLimeVat!=nullptr)
 	{
-		halfSlicedLimeVat->isDropSoundEnabled = true;
+		halfSlicedLimeVat->isDropSoundEnabled=true;
 		halfSlicedLimeVat->SetSimulateAndTickDisable();
-		if (halfSlicedLimeVat)
-		{
+		if(halfSlicedLimeVat)
 			halfSlicedLimeVat->Destroy();
-		}
+
 	}
-	else if (isGrabbingSlicedLimeVatRight && slicedLimeVat != nullptr)
+	else if(isGrabbingSlicedLimeVatRight&&slicedLimeVat!=nullptr)
 	{
-		slicedLimeVat->isDropSoundEnabled = true;
+		slicedLimeVat->isDropSoundEnabled=true;
 		slicedLimeVat->SetSimulateAndTickDisable();
-		if (slicedLimeVat)
-		{
+		if(slicedLimeVat)
 			slicedLimeVat->Destroy();
-		}
+
 	}
-	else if (isGrabbingHalfSlicedOrangeVatRight && halfSlicedOrangeVat != nullptr)
+	else if(isGrabbingHalfSlicedOrangeVatRight&&halfSlicedOrangeVat!=nullptr)
 	{
-		halfSlicedOrangeVat->isDropSoundEnabled = true;
+		halfSlicedOrangeVat->isDropSoundEnabled=true;
 		halfSlicedOrangeVat->SetSimulateAndTickDisable();
-		if (halfSlicedOrangeVat)
-		{
+		if(halfSlicedOrangeVat)
 			halfSlicedOrangeVat->Destroy();
-		}
+
 	}
-	else if (isGrabbingSlicedOrangeVatRight && slicedOrangeVat != nullptr)
+	else if(isGrabbingSlicedOrangeVatRight&&slicedOrangeVat!=nullptr)
 	{
-		slicedOrangeVat->isDropSoundEnabled = true;
+		slicedOrangeVat->isDropSoundEnabled=true;
 		slicedOrangeVat->SetSimulateAndTickDisable();
-		if (slicedOrangeVat)
-		{
+		if(slicedOrangeVat)
 			slicedOrangeVat->Destroy();
-		}
+
 	}
-	else if (isGrabbingOliveVatRight && oliveVat != nullptr)
+	else if(isGrabbingOliveVatRight&&oliveVat!=nullptr)
 	{
-		oliveVat->isDropSoundEnabled = true;
+		oliveVat->isDropSoundEnabled=true;
 		oliveVat->SetSimulateAndTickDisable();
-		if (oliveVat)
-		{
+		if(oliveVat)
 			oliveVat->Destroy();
-		}
 	}
-	else if (isGrabbingIceCubeVatRight && iceCubeVat != nullptr)
+	else if(isGrabbingIceCubeVatRight&&iceCubeVat!=nullptr)
 	{
-		iceCubeVat->isDropSoundEnabled = true;
+		iceCubeVat->isDropSoundEnabled=true;
 		iceCubeVat->SetSimulateAndTickDisable();
-		if (iceCubeVat)
-		{
+		if(iceCubeVat)
 			iceCubeVat->Destroy();
-		}
 	}
 
-	isDropped = true;
+	isDropped=true;
 }
 
 void APlayerCharacter::DestroyDroppedObjectLeft()
 {
 	// 왼손에 Tongs를 잡고 있었다면
-	if (isGrabbingTongsLeft)
+	if(isGrabbingTongsLeft)
 	{
-		huchuTongL->isDropSoundEnabled = true;
+		huchuTongL->isDropSoundEnabled=true;
 		// Tongs에 잡혀 있는 대상이 있었다면
-		if (isGrabbingWithTongsLeft)
+		if(isGrabbingWithTongsLeft)
 		{
 			FLatentActionInfo LatentInfo;
 			LatentInfo.CallbackTarget = this;
 			auto tongCompRef = huchuTongL->tongRight;
-			UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation() + FRotator(-5, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
+			UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-5, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
 			isTongsTickEnabledL = true;
 			// 1. 잡지않은 상태로 전환
 			isGrabbingWithTongsLeft = false;
@@ -1112,211 +1134,186 @@ void APlayerCharacter::DestroyDroppedObjectLeft()
 			GrabbedObjectWithTongsLeft = nullptr;
 		}
 		huchuTongL->SetSimulateAndTickDisable();
-		isGrabbingTongsLeft = false;
-		if (huchuTongL)
-		{
+		isGrabbingTongsLeft=false;
+		if(huchuTongL)
 			huchuTongL->Destroy();
-		}
 	}
-	else if (isGrabbingBottleLeft && bottleL != nullptr)
+	else if(isGrabbingBottleLeft&&bottleL!=nullptr)
 	{
-		bottleL->isDropSoundEnabled = true;
-		bottleL->isGBL = false;
-		bottleL->isGrabbingBottle = false;
+		bottleL->isDropSoundEnabled=true;
+		bottleL->isGBL=false;
+		bottleL->isGrabbingBottle=false;
 		bottleL->SetSimulateAndTickDisable();
-		isGrabbingBottleLeft = false;
-		if (bottleL)
-		{
+		isGrabbingBottleLeft=false;
+		if(bottleL)
 			bottleL->Destroy();
-		}
 	}
-	else if (isGrabbingTabletLeft && tabletL != nullptr)
+	else if(isGrabbingTabletLeft&&tabletL!=nullptr)
 	{
-		isGrabbingTabletLeft = false;
+		isGrabbingTabletLeft=false;
 		tabletL->AttachToTabletStand();
-		tabletL->isDropSoundEnabled = true;
+		tabletL->isDropSoundEnabled=true;
 		tabletL->SetSimulateAndTickDisable();
 
 		//widgetInteractionComp->bShowDebug=false;
 		//widgetInteractionCompLeft->bShowDebug=false;
-		if (tabletL)
-		{
+		if(tabletL)
 			tabletL->Destroy();
-		}
 	}
-	else if (isGrabbingCoasterLeft && coasterL != nullptr)
+	else if(isGrabbingCoasterLeft&&coasterL!=nullptr)
 	{
-		coasterL->isDropSoundEnabled = true;
+		coasterL->isDropSoundEnabled=true;
 		coasterL->boxComp->SetCollisionProfileName(FName("CoasterBeforeGrab"));
 		coasterL->SetSimulateAndTickDisable();
 
-		isGrabbingCoasterLeft = false;
-		if (coasterL)
-		{
+		isGrabbingCoasterLeft=false;
+		if(coasterL)
 			coasterL->Destroy();
-		}
 	}
-	else if (isGrabbingBarSpoonLeft && barSpoonL != nullptr)
+	else if(isGrabbingBarSpoonLeft&&barSpoonL!=nullptr)
 	{
-		barSpoonL->isDropSoundEnabled = true;
+		barSpoonL->isDropSoundEnabled=true;
 		barSpoonL->meshComp->SetCollisionProfileName(FName("Spoon"));
-		if (barSpoonL)
-		{
+		if(barSpoonL)
 			barSpoonL->Destroy();
-		}
+
 	}
-	else if (isGrabbingShakerLeft && shakerL != nullptr)
+	else if(isGrabbingShakerLeft&&shakerL!=nullptr)
 	{
-		shakerL->isGSL = false;
-		shakerL->VRGripInterfaceSettings.bDenyGripping = false;
-		shakerL->isDropSoundEnabled = true;
-		shakerL->isGrabbingShaker = false;
-		isGrabbingShakerLeft = false;
-		if (shakerL)
-		{
+		shakerL->isGSL=false;
+		shakerL->VRGripInterfaceSettings.bDenyGripping=false;
+		shakerL->isDropSoundEnabled=true;
+		shakerL->isGrabbingShaker=false;		
+		isGrabbingShakerLeft=false;
+		if(shakerL)
 			shakerL->Destroy();
-		}
 	}
-	else if (isGrabbingCupLeft && cupL != nullptr)
+	else if(isGrabbingCupLeft&&cupL!=nullptr)
 	{
-		cupL->isDropSoundEnabled = true;
-		cupL->isCupTickActivated = false;
+		cupL->isDropSoundEnabled=true;
+		cupL->isCupTickActivated=false;
 		cupL->SetSimulateAndTickDisable();
-		isGrabbingCupLeft = false;
-		if (cupL)
-		{
+		isGrabbingCupLeft=false;
+		if(cupL)
 			cupL->Destroy();
-		}
 	}
-	else if (isGrabbingShakerLidLeft && shakerLidL != nullptr)
-	{
-		shakerLidL->isDropSoundEnabled = true;
+	else if(isGrabbingShakerLidLeft&&shakerLidL!=nullptr)
+	{			
+		shakerLidL->isDropSoundEnabled=true;
 		shakerLidL->AttachToShakerStrainer();
 		shakerLidL->SetSimulateAndTickDisable();
 
-		isGrabbingShakerLidLeft = false;
-		if (shakerLidL)
-		{
+		isGrabbingShakerLidLeft=false;
+		if(shakerLidL)
 			shakerLidL->Destroy();
-		}
 	}
-	else if (isGrabbingShakerStrainerLeft && shakerStrainerL != nullptr)
-	{
-		shakerStrainerL->isDropSoundEnabled = true;
+	else if(isGrabbingShakerStrainerLeft&&shakerStrainerL!=nullptr)
+	{	
+		shakerStrainerL->isDropSoundEnabled=true;
 		shakerStrainerL->AttachToShaker();
 		shakerStrainerL->SetSimulateAndTickDisable();
 
-		isGrabbingShakerStrainerLeft = false;
-		if (shakerStrainerL)
-		{
+		isGrabbingShakerStrainerLeft=false;
+		if(shakerStrainerL)
 			shakerStrainerL->Destroy();
-		}
+	
 	}
-	else if (isGrabbingMixingGlassLeft && mixingGlassL != nullptr)
+	else if(isGrabbingMixingGlassLeft&&mixingGlassL!=nullptr)
 	{
-		mixingGlassL->VRGripInterfaceSettings.bDenyGripping = false;
-		mixingGlassL->isDropSoundEnabled = true;
-		mixingGlassL->isGrabbingMixingGlass = false;
-		isGrabbingMixingGlassLeft = false;
-		if (mixingGlassL)
-		{
+		mixingGlassL->VRGripInterfaceSettings.bDenyGripping=false;
+		mixingGlassL->isDropSoundEnabled=true;
+		mixingGlassL->isGrabbingMixingGlass=false;
+		isGrabbingMixingGlassLeft=false;
+		if(mixingGlassL)
 			mixingGlassL->Destroy();
-		}
 	}
-	else if (isGrabbingStrainerLeft && strainerL != nullptr)
+	else if(isGrabbingStrainerLeft&&strainerL!=nullptr)
 	{
-		strainerL->isDropSoundEnabled = true;
+		strainerL->isDropSoundEnabled=true;
 		strainerL->AttachToMixingGlass();
 		strainerL->SetSimulateAndTickDisable();
 
-		isGrabbingStrainerLeft = false;
-		if (strainerL)
-		{
+		isGrabbingStrainerLeft=false;
+		if(strainerL)
 			strainerL->Destroy();
-		}
+			
 	}
 
-	else if (isGrabbingDrinkCanLeft && drinkCanL != nullptr)
+	else if(isGrabbingDrinkCanLeft&&drinkCanL!=nullptr)
 	{
-		drinkCanL->isDropSoundEnabled = true;
-		if (drinkCanL)
-		{
+		drinkCanL->isDropSoundEnabled=true;
+		if(drinkCanL)
 			drinkCanL->Destroy();
-		}
 	}
-	else if (isGrabbingHalfSlicedLimeVatLeft && halfSlicedLimeVatL != nullptr)
+	else if(isGrabbingHalfSlicedLimeVatLeft&&halfSlicedLimeVatL!=nullptr)
 	{
-		halfSlicedLimeVatL->isDropSoundEnabled = true;
+		halfSlicedLimeVatL->isDropSoundEnabled=true;
 		halfSlicedLimeVatL->SetSimulateAndTickDisable();
-		if (halfSlicedLimeVatL)
-		{
+		if(halfSlicedLimeVatL)
 			halfSlicedLimeVatL->Destroy();
-		}
-	}
-	else if (isGrabbingSlicedLimeVatLeft && slicedLimeVatL != nullptr)
-	{
-		slicedLimeVatL->isDropSoundEnabled = true;
-		slicedLimeVatL->SetSimulateAndTickDisable();
-		if (slicedLimeVatL)
-		{
-			slicedLimeVatL->Destroy();
-		}
-	}
-	else if (isGrabbingHalfSlicedOrangeVatLeft && halfSlicedOrangeVatL != nullptr)
-	{
-		halfSlicedOrangeVatL->isDropSoundEnabled = true;
-		halfSlicedOrangeVatL->SetSimulateAndTickDisable();
-		if (halfSlicedOrangeVatL)
-		{
-			halfSlicedOrangeVatL->Destroy();
-		}
-	}
-	else if (isGrabbingSlicedOrangeVatLeft && slicedOrangeVatL != nullptr)
-	{
-		slicedOrangeVatL->isDropSoundEnabled = true;
-		slicedOrangeVatL->SetSimulateAndTickDisable();
-		if (slicedOrangeVatL)
-		{
-			slicedOrangeVatL->Destroy();
-		}
-	}
-	else if (isGrabbingOliveVatLeft && oliveVatL != nullptr)
-	{
-		oliveVatL->isDropSoundEnabled = true;
-		oliveVatL->SetSimulateAndTickDisable();
-		if (oliveVatL)
-		{
-			oliveVatL->Destroy();
-		}
-	}
-	else if (isGrabbingIceCubeVatLeft && iceCubeVatL != nullptr)
-	{
-		iceCubeVatL->isDropSoundEnabled = true;
-		iceCubeVatL->SetSimulateAndTickDisable();
-		if (iceCubeVatL)
-		{
-			iceCubeVatL->Destroy();
-		}
-	}
 
-	isDropped = true;
+	}
+	else if(isGrabbingSlicedLimeVatLeft&&slicedLimeVatL!=nullptr)
+	{
+		slicedLimeVatL->isDropSoundEnabled=true;
+		slicedLimeVatL->SetSimulateAndTickDisable();
+		if(slicedLimeVatL)
+			slicedLimeVatL->Destroy();
+
+	}
+	else if(isGrabbingHalfSlicedOrangeVatLeft&&halfSlicedOrangeVatL!=nullptr)
+	{
+		halfSlicedOrangeVatL->isDropSoundEnabled=true;
+		halfSlicedOrangeVatL->SetSimulateAndTickDisable();
+		if(halfSlicedOrangeVatL)
+			halfSlicedOrangeVatL->Destroy();
+
+	}
+	else if(isGrabbingSlicedOrangeVatLeft&&slicedOrangeVatL!=nullptr)
+	{
+		slicedOrangeVatL->isDropSoundEnabled=true;
+		slicedOrangeVatL->SetSimulateAndTickDisable();
+		if(slicedOrangeVatL)
+			slicedOrangeVatL->Destroy();
+
+	}
+	else if(isGrabbingOliveVatLeft&&oliveVatL!=nullptr)
+	{
+		oliveVatL->isDropSoundEnabled=true;
+		oliveVatL->SetSimulateAndTickDisable();
+		if(oliveVatL)
+			oliveVatL->Destroy();
+
+	}
+	else if(isGrabbingIceCubeVatLeft&&iceCubeVatL!=nullptr)
+	{
+		iceCubeVatL->isDropSoundEnabled=true;
+		iceCubeVatL->SetSimulateAndTickDisable();
+		if(iceCubeVatL)
+			iceCubeVatL->Destroy();
+
+	}
+	
+	isDropped=true;
+
 }
 
 void APlayerCharacter::FireRight()
-{
-	if (widgetInteractionComp)
+{	
+	if(widgetInteractionComp)
 	{
 		//UI에 이벤트를 전달하고 싶다.
 		widgetInteractionComp->PressPointerKey(FKey(FName("LeftMouseButton")));
 		bool isCursorOn = widgetInteractionComp->IsOverHitTestVisibleWidget();
-		if (isCursorOn)
+		if(isCursorOn)
 		{
-			UGameplayStatics::PlaySound2D(GetWorld(), TriggerPressedSound, 1, 1, 0);
+			UGameplayStatics::PlaySound2D(GetWorld(),TriggerPressedSound, 1, 1, 0);
 		}
 		//widgetInteractionComp->ReleasePointerKey(FKey(FName("LeftMouseButton")));
+
 	}
 	// 오른손에 Tongs를 쥐고 있다면
-	if (isGrabbingTongsRight)
+	if(isGrabbingTongsRight)
 	{
 		// 집게를 든채로 Vat에서 Trigger 되었는지 판단하는 OverlapMulti
 		// 중심점
@@ -1344,95 +1341,95 @@ void APlayerCharacter::FireRight()
 			{
 				// 가장 가까운 대상으로 변경하기
 				ClosestVat = i;
-			}
+			}				
 		}
-		if (isVatCastedRight)
+		if(isVatCastedRight)
 		{
-			halfSlicedLimeVat = Cast<AHalfSlicedLimeVat>(VatHitObj[ClosestVat].GetActor());
-			slicedLimeVat = Cast<ASlicedLimeVat>(VatHitObj[ClosestVat].GetActor());
-			iceCubeVat = Cast<AIceCubeVat>(VatHitObj[ClosestVat].GetActor());
-			oliveVat = Cast<AOliveVat>(VatHitObj[ClosestVat].GetActor());
+			halfSlicedLimeVat=Cast<AHalfSlicedLimeVat>(VatHitObj[ClosestVat].GetActor());
+			slicedLimeVat=Cast<ASlicedLimeVat>(VatHitObj[ClosestVat].GetActor());
+			iceCubeVat=Cast<AIceCubeVat>(VatHitObj[ClosestVat].GetActor());
+			oliveVat=Cast<AOliveVat>(VatHitObj[ClosestVat].GetActor());
 			halfSlicedOrangeVat = Cast<AHalfSlicedOrangeVat>(VatHitObj[ClosestVat].GetActor());
 			slicedOrangeVat = Cast<ASlicedOrangeVat>(VatHitObj[ClosestVat].GetActor());
-			if (halfSlicedLimeVat)
+			if(halfSlicedLimeVat)
 			{
 				// Haptic Feedback
-				if (PC)
+				if(PC)
 				{
-					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);
+					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);			
 				}
 				FActorSpawnParameters param;
 				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				auto socketLoc = huchuTong->tongRight->GetSocketLocation(FName("LimeSocket"));
-				auto socketRot = huchuTong->tongRight->GetSocketRotation(FName("LimeSocket"));
+				auto socketRot = huchuTong->tongRight-> GetSocketRotation(FName("LimeSocket"));
 				GetWorld()->SpawnActor<AHalfSlicedLime>(halfSlicedLimeFac, socketLoc, socketRot, param);
 			}
-			else if (slicedLimeVat)
+			else if(slicedLimeVat)
 			{
 				// Haptic Feedback
-				if (PC)
+				if(PC)
 				{
-					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);
+					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);			
 				}
 				FActorSpawnParameters param;
 				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				auto socketLoc = huchuTong->tongRight->GetSocketLocation(FName("LimeSocket"));
-				auto socketRot = huchuTong->tongRight->GetSocketRotation(FName("LimeSocket"));
+				auto socketRot = huchuTong->tongRight-> GetSocketRotation(FName("LimeSocket"));
 				GetWorld()->SpawnActor<ASlicedLime>(slicedLimeFac, socketLoc, socketRot, param);
 			}
-			else if (iceCubeVat)
+			else if(iceCubeVat)
 			{
 				// Haptic Feedback
-				if (PC)
+				if(PC)
 				{
-					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);
+					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);			
 				}
 				FActorSpawnParameters param;
 				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				auto socketLoc = huchuTong->tongRight->GetSocketLocation(FName("TongGrabSizeSocket"));
-				auto socketRot = huchuTong->tongRight->GetSocketRotation(FName("TongGrabSizeSocket"));
+				auto socketRot = huchuTong->tongRight-> GetSocketRotation(FName("TongGrabSizeSocket"));
 				GetWorld()->SpawnActor<AIceCube>(iceCubeFac, socketLoc, socketRot, param);
 			}
-			else if (oliveVat)
+			else if(oliveVat)
 			{
 				// Haptic Feedback
-				if (PC)
+				if(PC)
 				{
-					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);
+					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);			
 				}
 				FActorSpawnParameters param;
 				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				auto socketLoc = huchuTong->tongRight->GetSocketLocation(FName("OliveSocket"));
-				auto socketRot = huchuTong->tongRight->GetSocketRotation(FName("OliveSocket"));
+				auto socketRot = huchuTong->tongRight-> GetSocketRotation(FName("OliveSocket"));
 				GetWorld()->SpawnActor<AOlivePick>(oliveFac, socketLoc, socketRot, param);
 			}
-			else if (halfSlicedOrangeVat)
+			else if(halfSlicedOrangeVat)
 			{
 				// Haptic Feedback
-				if (PC)
+				if(PC)
 				{
-					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);
+					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);			
 				}
 				FActorSpawnParameters param;
 				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				auto socketLoc = huchuTong->tongRight->GetSocketLocation(FName("LimeSocket"));
-				auto socketRot = huchuTong->tongRight->GetSocketRotation(FName("LimeSocket"));
+				auto socketRot = huchuTong->tongRight-> GetSocketRotation(FName("LimeSocket"));
 				GetWorld()->SpawnActor<AHalfSlicedOrange>(halfSlicedOrangeFac, socketLoc, socketRot, param);
 			}
-			else if (slicedOrangeVat)
+			else if(slicedOrangeVat)
 			{
 				// Haptic Feedback
-				if (PC)
+				if(PC)
 				{
-					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);
+					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Right);			
 				}
 				FActorSpawnParameters param;
 				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				auto socketLoc = huchuTong->tongRight->GetSocketLocation(FName("LimeSocket"));
-				auto socketRot = huchuTong->tongRight->GetSocketRotation(FName("LimeSocket"));
+				auto socketRot = huchuTong->tongRight-> GetSocketRotation(FName("LimeSocket"));
 				GetWorld()->SpawnActor<ASlicedOrange>(slicedOrangeFac, socketLoc, socketRot, param);
 			}
-			isVatCastedRight = false;
+			isVatCastedRight=false;
 		}
 		// 집게에 집는 대상 오브젝트가 오버랩되었는지 판단하는 OverlapMulti
 		// 중심점
@@ -1466,117 +1463,119 @@ void APlayerCharacter::FireRight()
 			// 3. 만약 이번 대상이 현재 대상보다 가깝다면,
 			if (NextDist < ClosestDist)
 			{
+
 				// 가장 가까운 대상으로 변경하기
 				Closest = i;
 			}
-		}
+		}		
 		// ice cube 잡기에 성공했다면
-		if (isGrabbingWithTongsRight && HitObj[Closest].GetComponent()->IsSimulatingPhysics() == true)
+		if (isGrabbingWithTongsRight&&HitObj[Closest].GetComponent()->IsSimulatingPhysics() == true)
 		{
-			GrabbedActorWithTongsRight = HitObj[Closest].GetComponent()->GetAttachmentRootActor();
+			GrabbedActorWithTongsRight=HitObj[Closest].GetComponent()->GetAttachmentRootActor();
 			GrabbedObjectWithTongsRight = HitObj[Closest].GetComponent();
-			iceCube = Cast<AIceCube>(GrabbedActorWithTongsRight);
-			slicedLime = Cast<ASlicedLime>(GrabbedActorWithTongsRight);
-			halfSlicedLime = Cast<AHalfSlicedLime>(GrabbedActorWithTongsRight);
-			olivePick = Cast<AOlivePick>(GrabbedActorWithTongsRight);
+			iceCube=Cast<AIceCube>(GrabbedActorWithTongsRight);
+			slicedLime=Cast<ASlicedLime>(GrabbedActorWithTongsRight);
+			halfSlicedLime=Cast<AHalfSlicedLime>(GrabbedActorWithTongsRight);
+			olivePick=Cast<AOlivePick>(GrabbedActorWithTongsRight);
 			slicedOrange = Cast<ASlicedOrange>(GrabbedActorWithTongsRight);
-			halfSlicedOrange = Cast<AHalfSlicedOrange>(GrabbedActorWithTongsRight);
+			halfSlicedOrange=Cast<AHalfSlicedOrange>(GrabbedActorWithTongsRight);
+			
+			if(GrabbedActorWithTongsRight==iceCube&&iceCube!=nullptr)
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
+				isGrabbingIceWithTongsRight=true;
+				GrabbedObjectWithTongsRight->SetSimulatePhysics(false);
+				GrabbedObjectWithTongsRight->SetCollisionEnabled(ECollisionEnabled::NoCollision);				
+				GrabbedObjectWithTongsRight->AttachToComponent(huchuTong->tongRight,FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("TongGrabSizeSocket"));
+			}
+			else if(GrabbedActorWithTongsRight==slicedLime&&slicedLime!=nullptr)
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
+				isGrabbingLimeWithTongsRight=true;
+				GrabbedObjectWithTongsRight->SetSimulatePhysics(false);
+				GrabbedObjectWithTongsRight->SetCollisionEnabled(ECollisionEnabled::NoCollision);				
+				GrabbedObjectWithTongsRight->AttachToComponent(huchuTong->tongRight,FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
+			}
+			else if(GrabbedActorWithTongsRight==halfSlicedLime&&halfSlicedLime!=nullptr)
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
+				isGrabbingLimeWithTongsRight=true;
+				GrabbedObjectWithTongsRight->SetSimulatePhysics(false);
+				GrabbedObjectWithTongsRight->SetCollisionEnabled(ECollisionEnabled::NoCollision);				
+				GrabbedObjectWithTongsRight->AttachToComponent(huchuTong->tongRight,FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
+			}
+			else if(GrabbedActorWithTongsRight==olivePick&&olivePick!=nullptr)
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
+				isGrabbingOliveWithTongsRight=true;
+				GrabbedObjectWithTongsRight->SetSimulatePhysics(false);
+				GrabbedObjectWithTongsRight->SetCollisionEnabled(ECollisionEnabled::NoCollision);				
+				GrabbedObjectWithTongsRight->AttachToComponent(huchuTong->tongRight,FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("OliveSocket"));
+			}
+			else if(GrabbedActorWithTongsRight==slicedOrange&&slicedOrange!=nullptr)
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
+				isGrabbingOrangeWithTongsRight=true;
+				GrabbedObjectWithTongsRight->SetSimulatePhysics(false);
+				GrabbedObjectWithTongsRight->SetCollisionEnabled(ECollisionEnabled::NoCollision);				
+				GrabbedObjectWithTongsRight->AttachToComponent(huchuTong->tongRight,FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
+			}
+			else if(GrabbedActorWithTongsRight==halfSlicedOrange&&halfSlicedOrange!=nullptr)
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
+				isGrabbingOrangeWithTongsRight=true;
+				GrabbedObjectWithTongsRight->SetSimulatePhysics(false);
+				GrabbedObjectWithTongsRight->SetCollisionEnabled(ECollisionEnabled::NoCollision);				
+				GrabbedObjectWithTongsRight->AttachToComponent(huchuTong->tongRight,FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
+			}
+		}		
+			auto tongCompRef = huchuTong->tongRight;
+			auto tongLoc =  huchuTong->tongRight->GetSocketLocation(FName("TongGrabSizeSocket"));
+			auto tongRightVector = huchuTong->GetActorForwardVector();
+			FCollisionQueryParams params1;
+			params1.AddIgnoredActor(huchuTong);  
+			params1.AddIgnoredActor(this);				
+			FHitResult leftTrace;
+			FHitResult rightTrace;
+			// Tongs 양쪽에서 LineTrace롤 통해 Grab할 대상의 크기를 측정한다.
+			bool bHitR = GetWorld()->LineTraceSingleByChannel(rightTrace,tongLoc+tongRightVector*25.0f, tongLoc+tongRightVector*-25.0f, ECC_Visibility,params1);
+			bool bHitL = GetWorld()->LineTraceSingleByChannel(leftTrace,tongLoc+tongRightVector*-25.0f, tongLoc+tongRightVector*25.0f, ECC_Visibility,params1);
+			// LineTrace가 양쪽 모두 적중했다면
+			if(bHitL&&bHitR)
+			{
+				if(isGrabbingIceWithTongsRight)
+				{
+					isTongsTickEnabled = false;
+					// Left Impact Point와 Right Impact Point 사이의 간격을 도출한다
+					//grabbingObjectSize = FVector::Dist(leftTrace.ImpactPoint, rightTrace.ImpactPoint);
+					// grabbingObjectSize에 따라서 Tongs가 다물어질 정도를 결정한다.
+					tongCompRef->SetRelativeRotation(FRotator(5, 0, 0));
+				}
+				else if(isGrabbingLimeWithTongsRight)
+				{
+					isTongsTickEnabled = false;
+					tongCompRef->SetRelativeRotation(FRotator(13, 0, 0));
+				}
+				else if(isGrabbingOliveWithTongsRight)
+				{
+					isTongsTickEnabled = false;
+					tongCompRef->SetRelativeRotation(FRotator(12, 0, 0));
+				}
+				else if(isGrabbingOrangeWithTongsRight)
+				{
+					isTongsTickEnabled = false;
+					tongCompRef->SetRelativeRotation(FRotator(13, 0, 0));
+				}
+			}
+			// LineTrace가 적중하지 않았다면 -> 허공이라면
+			else
+			{
+				// Oculus Trigger Input Value에 따른 Tongs Rotation 제어 Tick 활성화
+				isTongsTickEnabled=true;
+			}
 
-			if (GrabbedActorWithTongsRight == iceCube && iceCube != nullptr)
-			{
-				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
-				isGrabbingIceWithTongsRight = true;
-				GrabbedObjectWithTongsRight->SetSimulatePhysics(false);
-				GrabbedObjectWithTongsRight->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				GrabbedObjectWithTongsRight->AttachToComponent(huchuTong->tongRight, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("TongGrabSizeSocket"));
-			}
-			else if (GrabbedActorWithTongsRight == slicedLime && slicedLime != nullptr)
-			{
-				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
-				isGrabbingLimeWithTongsRight = true;
-				GrabbedObjectWithTongsRight->SetSimulatePhysics(false);
-				GrabbedObjectWithTongsRight->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				GrabbedObjectWithTongsRight->AttachToComponent(huchuTong->tongRight, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
-			}
-			else if (GrabbedActorWithTongsRight == halfSlicedLime && halfSlicedLime != nullptr)
-			{
-				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
-				isGrabbingLimeWithTongsRight = true;
-				GrabbedObjectWithTongsRight->SetSimulatePhysics(false);
-				GrabbedObjectWithTongsRight->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				GrabbedObjectWithTongsRight->AttachToComponent(huchuTong->tongRight, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
-			}
-			else if (GrabbedActorWithTongsRight == olivePick && olivePick != nullptr)
-			{
-				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
-				isGrabbingOliveWithTongsRight = true;
-				GrabbedObjectWithTongsRight->SetSimulatePhysics(false);
-				GrabbedObjectWithTongsRight->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				GrabbedObjectWithTongsRight->AttachToComponent(huchuTong->tongRight, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("OliveSocket"));
-			}
-			else if (GrabbedActorWithTongsRight == slicedOrange && slicedOrange != nullptr)
-			{
-				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
-				isGrabbingOrangeWithTongsRight = true;
-				GrabbedObjectWithTongsRight->SetSimulatePhysics(false);
-				GrabbedObjectWithTongsRight->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				GrabbedObjectWithTongsRight->AttachToComponent(huchuTong->tongRight, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
-			}
-			else if (GrabbedActorWithTongsRight == halfSlicedOrange && halfSlicedOrange != nullptr)
-			{
-				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
-				isGrabbingOrangeWithTongsRight = true;
-				GrabbedObjectWithTongsRight->SetSimulatePhysics(false);
-				GrabbedObjectWithTongsRight->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				GrabbedObjectWithTongsRight->AttachToComponent(huchuTong->tongRight, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
-			}
-		}
-		auto tongCompRef = huchuTong->tongRight;
-		auto tongLoc = huchuTong->tongRight->GetSocketLocation(FName("TongGrabSizeSocket"));
-		auto tongRightVector = huchuTong->GetActorForwardVector();
-		FCollisionQueryParams params1;
-		params1.AddIgnoredActor(huchuTong);
-		params1.AddIgnoredActor(this);
-		FHitResult leftTrace;
-		FHitResult rightTrace;
-		// Tongs 양쪽에서 LineTrace롤 통해 Grab할 대상의 크기를 측정한다.
-		bool bHitR = GetWorld()->LineTraceSingleByChannel(rightTrace, tongLoc + tongRightVector * 25.0f, tongLoc + tongRightVector * -25.0f, ECC_Visibility, params1);
-		bool bHitL = GetWorld()->LineTraceSingleByChannel(leftTrace, tongLoc + tongRightVector * -25.0f, tongLoc + tongRightVector * 25.0f, ECC_Visibility, params1);
-		// LineTrace가 양쪽 모두 적중했다면
-		if (bHitL && bHitR)
-		{
-			if (isGrabbingIceWithTongsRight)
-			{
-				isTongsTickEnabled = false;
-				// Left Impact Point와 Right Impact Point 사이의 간격을 도출한다
-				//grabbingObjectSize = FVector::Dist(leftTrace.ImpactPoint, rightTrace.ImpactPoint);
-				// grabbingObjectSize에 따라서 Tongs가 다물어질 정도를 결정한다.
-				tongCompRef->SetRelativeRotation(FRotator(5, 0, 0));
-			}
-			else if (isGrabbingLimeWithTongsRight)
-			{
-				isTongsTickEnabled = false;
-				tongCompRef->SetRelativeRotation(FRotator(13, 0, 0));
-			}
-			else if (isGrabbingOliveWithTongsRight)
-			{
-				isTongsTickEnabled = false;
-				tongCompRef->SetRelativeRotation(FRotator(12, 0, 0));
-			}
-			else if (isGrabbingOrangeWithTongsRight)
-			{
-				isTongsTickEnabled = false;
-				tongCompRef->SetRelativeRotation(FRotator(13, 0, 0));
-			}
-		}
-		// LineTrace가 적중하지 않았다면 -> 허공이라면
-		else
-		{
-			// Oculus Trigger Input Value에 따른 Tongs Rotation 제어 Tick 활성화
-			isTongsTickEnabled = true;
-		}
-	}
-	if (isGrabbingCupRight && cup != nullptr)
+	}	
+	if(isGrabbingCupRight&&cup!=nullptr)
 	{
 		cup->SetCupEmpty();
 	}
@@ -1584,18 +1583,18 @@ void APlayerCharacter::FireRight()
 
 void APlayerCharacter::FireLeft()
 {
-	if (widgetInteractionCompLeft)
+	if(widgetInteractionCompLeft)
 	{
 		widgetInteractionCompLeft->PressPointerKey(FKey(FName("LeftMouseButton")));
 		//widgetInteractionCompLeft->ReleasePointerKey(FKey(FName("LeftMouseButton")));
 		bool isCursorOn = widgetInteractionComp->IsOverHitTestVisibleWidget();
-		if (isCursorOn)
+		if(isCursorOn)
 		{
-			UGameplayStatics::PlaySound2D(GetWorld(), TriggerPressedSound, 1, 1, 0);
+			UGameplayStatics::PlaySound2D(GetWorld(),TriggerPressedSound, 1, 1, 0);
 		}
 	}
 	// 왼손에 Tongs를 쥐고 있다면
-	if (isGrabbingTongsLeft)
+	if(isGrabbingTongsLeft)
 	{
 		// 집게를 든채로 Vat에서 Trigger 되었는지 판단하는 OverlapMulti
 		// 중심점
@@ -1610,7 +1609,7 @@ void APlayerCharacter::FireLeft()
 		if (bHitVat == false)
 		{
 			return;
-		}
+		}		
 		int32 ClosestVat = 0;
 		for (int i = 0; i < VatHitObj.Num(); ++i)
 		{
@@ -1623,95 +1622,95 @@ void APlayerCharacter::FireLeft()
 			{
 				// 가장 가까운 대상으로 변경하기
 				ClosestVat = i;
-			}
+			}				
 		}
-		if (isVatCastedLeft)
+		if(isVatCastedLeft)
 		{
-			halfSlicedLimeVat = Cast<AHalfSlicedLimeVat>(VatHitObj[ClosestVat].GetActor());
-			slicedLimeVat = Cast<ASlicedLimeVat>(VatHitObj[ClosestVat].GetActor());
-			iceCubeVat = Cast<AIceCubeVat>(VatHitObj[ClosestVat].GetActor());
-			oliveVat = Cast<AOliveVat>(VatHitObj[ClosestVat].GetActor());
-			halfSlicedOrangeVat = Cast<AHalfSlicedOrangeVat>(VatHitObj[ClosestVat].GetActor());
-			slicedOrangeVat = Cast<ASlicedOrangeVat>(VatHitObj[ClosestVat].GetActor());
-			if (halfSlicedLimeVat)
+			halfSlicedLimeVat=Cast<AHalfSlicedLimeVat>(VatHitObj[ClosestVat].GetActor());
+			slicedLimeVat=Cast<ASlicedLimeVat>(VatHitObj[ClosestVat].GetActor());
+			iceCubeVat=Cast<AIceCubeVat>(VatHitObj[ClosestVat].GetActor());
+			oliveVat=Cast<AOliveVat>(VatHitObj[ClosestVat].GetActor());
+			halfSlicedOrangeVat=Cast<AHalfSlicedOrangeVat>(VatHitObj[ClosestVat].GetActor());
+			slicedOrangeVat=Cast<ASlicedOrangeVat>(VatHitObj[ClosestVat].GetActor());
+			if(halfSlicedLimeVat)
 			{
 				// Haptic Feedback
-				if (PC)
+				if(PC)
 				{
-					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Left);
+					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Left);			
 				}
 				FActorSpawnParameters param;
 				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				auto socketLoc = huchuTongL->tongRight->GetSocketLocation(FName("LimeSocket"));
-				auto socketRot = huchuTongL->tongRight->GetSocketRotation(FName("LimeSocket"));
+				auto socketRot = huchuTongL->tongRight-> GetSocketRotation(FName("LimeSocket"));
 				GetWorld()->SpawnActor<AHalfSlicedLime>(halfSlicedLimeFac, socketLoc, socketRot, param);
 			}
-			else if (slicedLimeVat)
+			else if(slicedLimeVat)
 			{
 				// Haptic Feedback
-				if (PC)
+				if(PC)
 				{
-					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Left);
+					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Left);			
 				}
 				FActorSpawnParameters param;
 				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				auto socketLoc = huchuTongL->tongRight->GetSocketLocation(FName("LimeSocket"));
-				auto socketRot = huchuTongL->tongRight->GetSocketRotation(FName("LimeSocket"));
+				auto socketRot = huchuTongL->tongRight-> GetSocketRotation(FName("LimeSocket"));
 				GetWorld()->SpawnActor<ASlicedLime>(slicedLimeFac, socketLoc, socketRot, param);
 			}
-			else if (iceCubeVat)
+			else if(iceCubeVat)
 			{
 				// Haptic Feedback
-				if (PC)
+				if(PC)
 				{
-					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Left);
+					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Left);			
 				}
 				FActorSpawnParameters param;
 				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				auto socketLoc = huchuTongL->tongRight->GetSocketLocation(FName("TongGrabSizeSocket"));
-				auto socketRot = huchuTongL->tongRight->GetSocketRotation(FName("TongGrabSizeSocket"));
+				auto socketRot = huchuTongL->tongRight-> GetSocketRotation(FName("TongGrabSizeSocket"));
 				GetWorld()->SpawnActor<AIceCube>(iceCubeFac, socketLoc, socketRot, param);
 			}
-			else if (oliveVat)
+			else if(oliveVat)
 			{
 				// Haptic Feedback
-				if (PC)
+				if(PC)
 				{
-					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Left);
+					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Left);			
 				}
 				FActorSpawnParameters param;
 				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				auto socketLoc = huchuTongL->tongRight->GetSocketLocation(FName("OliveSocket"));
-				auto socketRot = huchuTongL->tongRight->GetSocketRotation(FName("OliveSocket"));
+				auto socketRot = huchuTongL->tongRight-> GetSocketRotation(FName("OliveSocket"));
 				GetWorld()->SpawnActor<AOlivePick>(oliveFac, socketLoc, socketRot, param);
 			}
-			else if (slicedOrangeVat)
+			else if(slicedOrangeVat)
 			{
 				// Haptic Feedback
-				if (PC)
+				if(PC)
 				{
-					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Left);
+					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Left);			
 				}
 				FActorSpawnParameters param;
 				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				auto socketLoc = huchuTongL->tongRight->GetSocketLocation(FName("LimeSocket"));
-				auto socketRot = huchuTongL->tongRight->GetSocketRotation(FName("LimeSocket"));
+				auto socketRot = huchuTongL->tongRight-> GetSocketRotation(FName("LimeSocket"));
 				GetWorld()->SpawnActor<ASlicedOrange>(slicedOrangeFac, socketLoc, socketRot, param);
 			}
-			else if (halfSlicedOrangeVat)
+			else if(halfSlicedOrangeVat)
 			{
 				// Haptic Feedback
-				if (PC)
+				if(PC)
 				{
-					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Left);
+					PC->PlayHapticEffect(HF_GrabObjectRight, EControllerHand::Left);			
 				}
 				FActorSpawnParameters param;
 				param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				auto socketLoc = huchuTongL->tongRight->GetSocketLocation(FName("LimeSocket"));
-				auto socketRot = huchuTongL->tongRight->GetSocketRotation(FName("LimeSocket"));
+				auto socketRot = huchuTongL->tongRight-> GetSocketRotation(FName("LimeSocket"));
 				GetWorld()->SpawnActor<AHalfSlicedOrange>(halfSlicedOrangeFac, socketLoc, socketRot, param);
 			}
-			isVatCastedLeft = false;
+			isVatCastedLeft=false;
 		}
 		// 중심점
 		FVector Center = huchuTongL->tongRight->GetSocketLocation(FName("TongAttach"));
@@ -1744,113 +1743,116 @@ void APlayerCharacter::FireLeft()
 			// 3. 만약 이번 대상이 현재 대상보다 가깝다면,
 			if (NextDist < ClosestDist)
 			{
+
 				// 가장 가까운 대상으로 변경하기
 				Closest = i;
 			}
 		}
-		if (isGrabbingWithTongsLeft && HitObj[Closest].GetComponent()->IsSimulatingPhysics() == true)
+		if (isGrabbingWithTongsLeft&&HitObj[Closest].GetComponent()->IsSimulatingPhysics() == true)
 		{
-			GrabbedActorWithTongsLeft = HitObj[Closest].GetComponent()->GetAttachmentRootActor();
+			GrabbedActorWithTongsLeft=HitObj[Closest].GetComponent()->GetAttachmentRootActor();
 			GrabbedObjectWithTongsLeft = HitObj[Closest].GetComponent();
-			iceCubeL = Cast<AIceCube>(GrabbedActorWithTongsLeft);
-			slicedLimeL = Cast<ASlicedLime>(GrabbedActorWithTongsLeft);
-			halfSlicedLimeL = Cast<AHalfSlicedLime>(GrabbedActorWithTongsLeft);
-			olivePickL = Cast<AOlivePick>(GrabbedActorWithTongsLeft);
-			slicedOrangeL = Cast<ASlicedOrange>(GrabbedActorWithTongsLeft);
-			halfSlicedOrangeL = Cast<AHalfSlicedOrange>(GrabbedActorWithTongsLeft);
-			if (GrabbedActorWithTongsLeft == iceCubeL && iceCubeL != nullptr)
+			iceCubeL=Cast<AIceCube>(GrabbedActorWithTongsLeft);
+			slicedLimeL=Cast<ASlicedLime>(GrabbedActorWithTongsLeft);
+			halfSlicedLimeL=Cast<AHalfSlicedLime>(GrabbedActorWithTongsLeft);
+			olivePickL=Cast<AOlivePick>(GrabbedActorWithTongsLeft);
+			slicedOrangeL=Cast<ASlicedOrange>(GrabbedActorWithTongsLeft);
+			halfSlicedOrangeL=Cast<AHalfSlicedOrange>(GrabbedActorWithTongsLeft);
+			if(GrabbedActorWithTongsLeft==iceCubeL&&iceCubeL!=nullptr)
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
-				isGrabbingIceWithTongsLeft = true;
+				isGrabbingIceWithTongsLeft=true;
 				GrabbedObjectWithTongsLeft->SetSimulatePhysics(false);
 				GrabbedObjectWithTongsLeft->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				GrabbedObjectWithTongsLeft->AttachToComponent(huchuTongL->tongRight, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("TongGrabSizeSocket"));
+				GrabbedObjectWithTongsLeft->AttachToComponent(huchuTongL->tongRight,FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("TongGrabSizeSocket"));
 			}
-			else if (GrabbedActorWithTongsLeft == slicedLimeL && slicedLimeL != nullptr)
+			else if(GrabbedActorWithTongsLeft==slicedLimeL&&slicedLimeL!=nullptr)
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
-				isGrabbingLimeWithTongsLeft = true;
+				isGrabbingLimeWithTongsLeft=true;
 				GrabbedObjectWithTongsLeft->SetSimulatePhysics(false);
 				GrabbedObjectWithTongsLeft->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				GrabbedObjectWithTongsLeft->AttachToComponent(huchuTongL->tongRight, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
+				GrabbedObjectWithTongsLeft->AttachToComponent(huchuTongL->tongRight,FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
 			}
-			else if (GrabbedActorWithTongsLeft == halfSlicedLimeL && halfSlicedLimeL != nullptr)
+			else if(GrabbedActorWithTongsLeft==halfSlicedLimeL&&halfSlicedLimeL!=nullptr)
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
-				isGrabbingLimeWithTongsLeft = true;
+				isGrabbingLimeWithTongsLeft=true;
 				GrabbedObjectWithTongsLeft->SetSimulatePhysics(false);
 				GrabbedObjectWithTongsLeft->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				GrabbedObjectWithTongsLeft->AttachToComponent(huchuTongL->tongRight, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
+				GrabbedObjectWithTongsLeft->AttachToComponent(huchuTongL->tongRight,FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
 			}
-			else if (GrabbedActorWithTongsLeft == olivePickL && olivePickL != nullptr)
+			else if(GrabbedActorWithTongsLeft==olivePickL&&olivePickL!=nullptr)
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
-				isGrabbingOliveWithTongsLeft = true;
+				isGrabbingOliveWithTongsLeft=true;
 				GrabbedObjectWithTongsLeft->SetSimulatePhysics(false);
 				GrabbedObjectWithTongsLeft->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				GrabbedObjectWithTongsLeft->AttachToComponent(huchuTongL->tongRight, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("OliveSocket"));
+				GrabbedObjectWithTongsLeft->AttachToComponent(huchuTongL->tongRight,FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("OliveSocket"));
 			}
-			else if (GrabbedActorWithTongsLeft == slicedOrangeL && slicedOrangeL != nullptr)
+			else if(GrabbedActorWithTongsLeft==slicedOrangeL&&slicedOrangeL!=nullptr)
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
-				isGrabbingOrangeWithTongsLeft = true;
+				isGrabbingOrangeWithTongsLeft=true;
 				GrabbedObjectWithTongsLeft->SetSimulatePhysics(false);
 				GrabbedObjectWithTongsLeft->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				GrabbedObjectWithTongsLeft->AttachToComponent(huchuTongL->tongRight, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
+				GrabbedObjectWithTongsLeft->AttachToComponent(huchuTongL->tongRight,FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
 			}
-			else if (GrabbedActorWithTongsLeft == halfSlicedOrangeL && halfSlicedOrangeL != nullptr)
+			else if(GrabbedActorWithTongsLeft==halfSlicedOrangeL&&halfSlicedOrangeL!=nullptr)
 			{
 				UGameplayStatics::PlaySound2D(GetWorld(), TongGrabSound, 1, 1, 0);
-				isGrabbingOrangeWithTongsLeft = true;
+				isGrabbingOrangeWithTongsLeft=true;
 				GrabbedObjectWithTongsLeft->SetSimulatePhysics(false);
 				GrabbedObjectWithTongsLeft->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				GrabbedObjectWithTongsLeft->AttachToComponent(huchuTongL->tongRight, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
+				GrabbedObjectWithTongsLeft->AttachToComponent(huchuTongL->tongRight,FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LimeSocket"));
 			}
-		}
+			
+		}	
 
-		auto tongCompRef = huchuTongL->tongRight;
-		auto tongLoc = huchuTongL->tongRight->GetSocketLocation(FName("TongGrabSizeSocket"));
-		auto tongRightVector = huchuTongL->GetActorForwardVector();
-		FCollisionQueryParams params1;
-		params1.AddIgnoredActor(huchuTongL);
-		params1.AddIgnoredActor(this);
-		FHitResult leftTrace;
-		FHitResult rightTrace;
-		// Tongs 양쪽에서 LineTrace롤 통해 Grab할 대상의 크기를 측정한다.
-		bool bHitR = GetWorld()->LineTraceSingleByChannel(rightTrace, tongLoc + tongRightVector * 25.0f, tongLoc + tongRightVector * -25.0f, ECC_Visibility, params1);
-		bool bHitL = GetWorld()->LineTraceSingleByChannel(leftTrace, tongLoc + tongRightVector * -25.0f, tongLoc + tongRightVector * 25.0f, ECC_Visibility, params1);
-		// LineTrace가 양쪽 모두 적중했다면
-		if (bHitL && bHitR)
-		{
-			if (isGrabbingIceWithTongsLeft)
+			auto tongCompRef = huchuTongL->tongRight;
+			auto tongLoc =  huchuTongL->tongRight->GetSocketLocation(FName("TongGrabSizeSocket"));
+			auto tongRightVector = huchuTongL->GetActorForwardVector();
+			FCollisionQueryParams params1;
+			params1.AddIgnoredActor(huchuTongL);  
+			params1.AddIgnoredActor(this);				
+			FHitResult leftTrace;
+			FHitResult rightTrace;
+			// Tongs 양쪽에서 LineTrace롤 통해 Grab할 대상의 크기를 측정한다.
+			bool bHitR = GetWorld()->LineTraceSingleByChannel(rightTrace,tongLoc+tongRightVector*25.0f, tongLoc+tongRightVector*-25.0f, ECC_Visibility,params1);
+			bool bHitL = GetWorld()->LineTraceSingleByChannel(leftTrace,tongLoc+tongRightVector*-25.0f, tongLoc+tongRightVector*25.0f, ECC_Visibility,params1);
+			// LineTrace가 양쪽 모두 적중했다면
+			if(bHitL&&bHitR)
 			{
-				isTongsTickEnabledL = false;
-				tongCompRef->SetRelativeRotation(FRotator(5, 0, 0));
+				if(isGrabbingIceWithTongsLeft)
+				{
+					isTongsTickEnabledL = false;
+					tongCompRef->SetRelativeRotation(FRotator(5, 0, 0));
+				}
+				else if(isGrabbingLimeWithTongsLeft)
+				{
+					isTongsTickEnabledL = false;
+					tongCompRef->SetRelativeRotation(FRotator(13, 0, 0));
+				}
+				else if(isGrabbingOliveWithTongsLeft)
+				{
+					isTongsTickEnabledL = false;
+					tongCompRef->SetRelativeRotation(FRotator(12, 0, 0));
+				}
+				else if(isGrabbingOrangeWithTongsLeft)
+				{
+					isTongsTickEnabledL = false;
+					tongCompRef->SetRelativeRotation(FRotator(13, 0, 0));
+				}
 			}
-			else if (isGrabbingLimeWithTongsLeft)
+			// LineTrace가 적중하지 않았다면 -> 허공이라면
+			else
 			{
-				isTongsTickEnabledL = false;
-				tongCompRef->SetRelativeRotation(FRotator(13, 0, 0));
+				// Oculus Trigger Input Value에 따른 Tongs Rotation 제어 Tick 활성화
+				isTongsTickEnabledL=true;
 			}
-			else if (isGrabbingOliveWithTongsLeft)
-			{
-				isTongsTickEnabledL = false;
-				tongCompRef->SetRelativeRotation(FRotator(12, 0, 0));
-			}
-			else if (isGrabbingOrangeWithTongsLeft)
-			{
-				isTongsTickEnabledL = false;
-				tongCompRef->SetRelativeRotation(FRotator(13, 0, 0));
-			}
-		}
-		// LineTrace가 적중하지 않았다면 -> 허공이라면
-		else
-		{
-			// Oculus Trigger Input Value에 따른 Tongs Rotation 제어 Tick 활성화
-			isTongsTickEnabledL = true;
-		}
+
 	}
-	if (isGrabbingCupLeft && cupL != nullptr)
+	if(isGrabbingCupLeft&&cupL!=nullptr)
 	{
 		cupL->SetCupEmpty();
 	}
@@ -1863,70 +1865,70 @@ void APlayerCharacter::FireReleasedRight()
 	{
 		widgetInteractionComp->ReleasePointerKey(FKey(FName("LeftMouseButton")));
 		bool isCursorOn = widgetInteractionComp->IsOverHitTestVisibleWidget();
-		if (isCursorOn)
+		if(isCursorOn)
 		{
-			UGameplayStatics::PlaySound2D(GetWorld(), TriggerReleasedSound, 1, 1, 0);
+			UGameplayStatics::PlaySound2D(GetWorld(),TriggerReleasedSound, 1, 1, 0);
 		}
 	}
-	if (isGrabbingTongsRight)
-	{
+	if(isGrabbingTongsRight)
+	{		
 		// Tongs로 잡고 있는 대상이 있었다면
 		if (isGrabbingWithTongsRight)
 		{
 			FLatentActionInfo LatentInfo;
-			LatentInfo.CallbackTarget = this;
+			LatentInfo.CallbackTarget = this;	
 			auto tongCompRef = huchuTong->tongRight;
-			if (isGrabbingIceWithTongsRight)
+			if(isGrabbingIceWithTongsRight)
 			{
 				tongCompRef->SetRelativeRotation(FRotator(0, 0, 0));
 				//UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-5, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
-				if (iceCube != nullptr)
+				if(iceCube!=nullptr)
 				{
-					iceCube->isIceCubeAttachable = true;
+					iceCube->isIceCubeAttachable=true;
 				}
 			}
-			else if (isGrabbingLimeWithTongsRight)
+			else if(isGrabbingLimeWithTongsRight)
 			{
 				tongCompRef->SetRelativeRotation(FRotator(0, 0, 0));
 				//UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-13, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
-				if (halfSlicedLime != nullptr)
+				if(halfSlicedLime!=nullptr)
 				{
-					halfSlicedLime->isHalfSlicedLimeAttachable = true;
+					halfSlicedLime->isHalfSlicedLimeAttachable=true;
 				}
-				if (slicedLime != nullptr)
+				if(slicedLime!=nullptr)
 				{
-					slicedLime->isSlicedLimeAttachable = true;
+					slicedLime->isSlicedLimeAttachable=true;
 				}
 			}
-			else if (isGrabbingOliveWithTongsRight)
+			else if(isGrabbingOliveWithTongsRight)
 			{
 				tongCompRef->SetRelativeRotation(FRotator(0, 0, 0));
 				//UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-12, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
-				if (olivePick != nullptr)
+				if(olivePick!=nullptr)
 				{
 					olivePick->isOliveAttachable = true;
 				}
 			}
-			else if (isGrabbingOrangeWithTongsRight)
+			else if(isGrabbingOrangeWithTongsRight)
 			{
 				tongCompRef->SetRelativeRotation(FRotator(0, 0, 0));
 				//UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-13, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
-				if (halfSlicedOrange != nullptr)
+				if(halfSlicedOrange!=nullptr)
 				{
-					halfSlicedOrange->isHalfSlicedOrangeAttachable = true;
+					halfSlicedOrange->isHalfSlicedOrangeAttachable=true;
 				}
-				if (slicedOrange != nullptr)
+				if(slicedOrange!=nullptr)
 				{
-					slicedOrange->isSlicedOrangeAttachable = true;
+					slicedOrange->isSlicedOrangeAttachable=true;
 				}
 			}
 			isTongsTickEnabled = true;
 			// 1. 잡지않은 상태로 전환
 			isGrabbingWithTongsRight = false;
-			isGrabbingIceWithTongsRight = false;
-			isGrabbingLimeWithTongsRight = false;
-			isGrabbingOliveWithTongsRight = false;
-			if (GrabbedObjectWithTongsRight != nullptr)
+			isGrabbingIceWithTongsRight=false;
+			isGrabbingLimeWithTongsRight=false;
+			isGrabbingOliveWithTongsRight=false;
+			if(GrabbedObjectWithTongsRight!=nullptr)
 			{
 				// 2. 손에서 떼어내기
 				GrabbedObjectWithTongsRight->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
@@ -1941,15 +1943,16 @@ void APlayerCharacter::FireReleasedRight()
 		else
 		{
 			isGrabbingWithTongsRight = false;
-			isGrabbingIceWithTongsRight = false;
-			isGrabbingLimeWithTongsRight = false;
-			isGrabbingOliveWithTongsRight = false;
-			isGrabbingOrangeWithTongsRight = false;
+			isGrabbingIceWithTongsRight=false;
+			isGrabbingLimeWithTongsRight=false;
+			isGrabbingOliveWithTongsRight=false;
+			isGrabbingOrangeWithTongsRight=false;
 			isTongsTickEnabled = true;
-		}
+		}	
 	}
 	else
 	{
+		return;
 	}
 }
 
@@ -1959,70 +1962,70 @@ void APlayerCharacter::FireReleasedLeft()
 	{
 		widgetInteractionCompLeft->ReleasePointerKey(FKey(FName("LeftMouseButton")));
 		bool isCursorOn = widgetInteractionComp->IsOverHitTestVisibleWidget();
-		if (isCursorOn)
+		if(isCursorOn)
 		{
-			UGameplayStatics::PlaySound2D(GetWorld(), TriggerReleasedSound, 1, 1, 0);
+			UGameplayStatics::PlaySound2D(GetWorld(),TriggerReleasedSound, 1, 1, 0);
 		}
 	}
-	if (isGrabbingTongsLeft)
-	{
+	if(isGrabbingTongsLeft)
+	{		
 		// Tongs로 잡고 있는 대상이 있었다면
 		if (isGrabbingWithTongsLeft)
 		{
 			FLatentActionInfo LatentInfo;
 			LatentInfo.CallbackTarget = this;
 			auto tongCompRef = huchuTongL->tongRight;
-			if (isGrabbingIceWithTongsLeft)
+			if(isGrabbingIceWithTongsLeft)
 			{
 				tongCompRef->SetRelativeRotation(FRotator(0, 0, 0));
 				//UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-5, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
-				if (iceCubeL != nullptr)
+				if(iceCubeL!=nullptr)
 				{
-					iceCubeL->isIceCubeAttachable = true;
+					iceCubeL->isIceCubeAttachable=true;
 				}
 			}
-			else if (isGrabbingLimeWithTongsLeft)
+			else if(isGrabbingLimeWithTongsLeft)
 			{
 				tongCompRef->SetRelativeRotation(FRotator(0, 0, 0));
 				//UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-13, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
-				if (halfSlicedLimeL != nullptr)
+				if(halfSlicedLimeL!=nullptr)
 				{
-					halfSlicedLimeL->isHalfSlicedLimeAttachable = true;
+					halfSlicedLimeL->isHalfSlicedLimeAttachable=true;
 				}
-				if (slicedLimeL != nullptr)
+				if(slicedLimeL!=nullptr)
 				{
-					slicedLimeL->isSlicedLimeAttachable = true;
+					slicedLimeL->isSlicedLimeAttachable=true;
 				}
 			}
-			else if (isGrabbingOliveWithTongsLeft)
+			else if(isGrabbingOliveWithTongsLeft)
 			{
 				tongCompRef->SetRelativeRotation(FRotator(0, 0, 0));
 				//UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-12, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
-				if (olivePickL != nullptr)
+				if(olivePickL!=nullptr)
 				{
-					olivePickL->isOliveAttachable = true;
+					olivePickL->isOliveAttachable=true;
 				}
 			}
-			else if (isGrabbingOrangeWithTongsLeft)
+			else if(isGrabbingOrangeWithTongsLeft)
 			{
 				tongCompRef->SetRelativeRotation(FRotator(0, 0, 0));
 				//UKismetSystemLibrary::MoveComponentTo(tongCompRef, tongCompRef->GetRelativeLocation(), tongCompRef->GetRelativeRotation()+FRotator(-13, 0, 0), false, false, 0.0, false, EMoveComponentAction::Move, LatentInfo);
-				if (halfSlicedOrangeL != nullptr)
+				if(halfSlicedOrangeL!=nullptr)
 				{
-					halfSlicedOrangeL->isHalfSlicedOrangeAttachable = true;
+					halfSlicedOrangeL->isHalfSlicedOrangeAttachable=true;
 				}
-				if (slicedOrangeL != nullptr)
+				if(slicedOrangeL!=nullptr)
 				{
-					slicedOrangeL->isSlicedOrangeAttachable = true;
+					slicedOrangeL->isSlicedOrangeAttachable=true;
 				}
 			}
 			isTongsTickEnabledL = true;
 			// 1. 잡지않은 상태로 전환
 			isGrabbingWithTongsLeft = false;
-			isGrabbingIceWithTongsLeft = false;
-			isGrabbingLimeWithTongsLeft = false;
-			isGrabbingOliveWithTongsLeft = false;
-			if (GrabbedObjectWithTongsLeft != nullptr)
+			isGrabbingIceWithTongsLeft=false;
+			isGrabbingLimeWithTongsLeft=false;
+			isGrabbingOliveWithTongsLeft=false;
+			if(GrabbedObjectWithTongsLeft!=nullptr)
 			{
 				// 2. 손에서 떼어내기
 				GrabbedObjectWithTongsLeft->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
@@ -2037,35 +2040,37 @@ void APlayerCharacter::FireReleasedLeft()
 		else
 		{
 			isGrabbingWithTongsLeft = false;
-			isGrabbingIceWithTongsLeft = false;
-			isGrabbingLimeWithTongsLeft = false;
-			isGrabbingOliveWithTongsLeft = false;
-			isGrabbingOrangeWithTongsLeft = false;
+			isGrabbingIceWithTongsLeft=false;
+			isGrabbingLimeWithTongsLeft=false;
+			isGrabbingOliveWithTongsLeft=false;
+			isGrabbingOrangeWithTongsLeft=false;
 			isTongsTickEnabledL = true;
-		}
+		}	
 	}
 	else
 	{
+		return;
 	}
 }
 
 void APlayerCharacter::ShowMenuWidget()
 {
-	if (BarGameInstance->bCheckMenu != false)
+	if(BarGameInstance->bCheckMenu!=false)
 	{
-		if (menuWidgetBool == false)
+		if(menuWidgetBool==false)
 		{
 			gameMode->SpawnMenu();
 			UGameplayStatics::PlaySound2D(GetWorld(), MenuWidgetAppearSound, 1, 1, 0);
-			menuWidgetBool = true;
+			menuWidgetBool=true;
 		}
 		else
 		{
 			gameMode->DestroyMenu();
 			UGameplayStatics::PlaySound2D(GetWorld(), MenuWidgetDisappearSound, 1, 1, 0);
-			menuWidgetBool = false;
+			menuWidgetBool=false;
 		}
 	}
+
 }
 
 void APlayerCharacter::ShowGuideWidget()
@@ -2079,9 +2084,9 @@ void APlayerCharacter::ShowGuideWidget()
 	FVector loc1 = VRReplicatedCamera->GetComponentLocation() + VRReplicatedCamera->GetForwardVector() * 150;
 	FVector loc2 = GetActorLocation() + GetActorUpVector() * 130;
 	FVector loc = {loc1.X, loc1.Y, loc2.Z};
-	if (BarGameInstance)
+	if(BarGameInstance)
 	{
-		if (BarGameInstance->bEnglish == false)
+		if(BarGameInstance->bEnglish==false)
 		{
 			GuideWidget = GetWorld()->SpawnActor<AGuideWidgetActor>(guideFactory, loc, rot);
 		}
@@ -2090,11 +2095,12 @@ void APlayerCharacter::ShowGuideWidget()
 			GuideWidget = GetWorld()->SpawnActor<AGuideWidgetActor>(guideFactoryEng, loc, rot);
 		}
 	}
+
 }
 
 void APlayerCharacter::HideGuideWidget()
 {
-	if (GuideWidget != nullptr)
+	if(GuideWidget!=nullptr)
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), GuideWidgetDisappearSound, 1, 1, 0);
 
@@ -2122,7 +2128,7 @@ void APlayerCharacter::PlayerTutoText()
 
 void APlayerCharacter::PlayerStartText()
 {
-	if (BarGameInstance->checkDayCount == 1 && UGameplayStatics::GetCurrentLevelName(GetWorld()) == "BarStartMap")
+	if(BarGameInstance->checkDayCount == 1 && UGameplayStatics::GetCurrentLevelName(GetWorld()) == "BarStartMap")
 	{
 		// 플레이어 대사 2
 		playerText_UI->SetSwitcher(0);
@@ -2131,13 +2137,13 @@ void APlayerCharacter::PlayerStartText()
 
 		PlayPlayerSound(1);
 	}
-	else if (BarGameInstance->checkDayCount == 2 && UGameplayStatics::GetCurrentLevelName(GetWorld()) == "BarStartMap")
+	else if(BarGameInstance->checkDayCount == 2 && UGameplayStatics::GetCurrentLevelName(GetWorld()) == "BarStartMap")
 	{
 		// 플레이어 대사 3
 		playerText_UI->SetSwitcher(0);
 		playerText_UI->StartPlayerText(3);
 		playerText_UI->StartPlayer();
-
+		
 		PlayPlayerSound(2);
 	}
 
