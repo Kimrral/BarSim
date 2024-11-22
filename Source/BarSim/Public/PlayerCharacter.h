@@ -53,6 +53,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputMappingContext* VREInputMappingContext;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputMappingContext* IMC_Hand;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* UseHeldObjectRight;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* UseHeldObjectLeft;
