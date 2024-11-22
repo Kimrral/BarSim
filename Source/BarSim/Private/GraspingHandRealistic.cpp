@@ -33,9 +33,9 @@
 #include "Components/WidgetComponent.h"
 #include "Haptics/HapticFeedbackEffect_Curve.h"
 
-AGraspingHandRealistic::AGraspingHandRealistic(const FObjectInitializer& ObjectInitializer):Super(ObjectInitializer)
+AGraspingHandRealistic::AGraspingHandRealistic(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {
-	actorInfoWidgetComp=CreateDefaultSubobject<UWidgetComponent>(TEXT("actorInfoWidgetComp"));
+	actorInfoWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("actorInfoWidgetComp"));
 	actorInfoWidgetComp->SetupAttachment(RootComponent);
 }
 
@@ -46,15 +46,15 @@ void AGraspingHandRealistic::BeginPlay()
 	// Enhanced Input 
 	PC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
 
-	actorInfoWidget=Cast<UActorInfoWidget>(actorInfoWidgetComp->GetWidget());
-	skeletalHand=GetSkeletalMeshComponent();	
+	actorInfoWidget = Cast<UActorInfoWidget>(actorInfoWidgetComp->GetWidget());
+	skeletalHand = GetSkeletalMeshComponent();
 	skeletalHand->SetGenerateOverlapEvents(true);
 	skeletalHand->OnComponentBeginOverlap.AddDynamic(this, &AGraspingHandRealistic::OnOverlap);
-	
+
 	actorInfoWidgetComp->SetVisibility(false);
 	BarGameInstance = Cast<UBarGameInstance>(GetWorld()->GetGameInstance());
 
-	if(BarGameInstance)
+	if (BarGameInstance)
 	{
 		BarGameInstance->resetHandDele.AddDynamic(this, &AGraspingHandRealistic::RespawnGraspingHands);
 	}
@@ -63,19 +63,17 @@ void AGraspingHandRealistic::BeginPlay()
 void AGraspingHandRealistic::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	
 }
 
 void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	TArray<FHitResult> hits;
-	if(SweepResult.GetNumOverlapHits(hits)>1)
+	if (SweepResult.GetNumOverlapHits(hits) > 1)
 	{
 		FVector Center = GetSkeletalMeshComponent()->GetComponentLocation();
 		int32 Closest = 0;
-		for(int i=0; i<hits.Num(); ++i)
+		for (int i = 0; i < hits.Num(); ++i)
 		{
 			float ClosestDist = FVector::Dist(hits[Closest].GetActor()->GetActorLocation(), Center);
 			float NextDist = FVector::Dist(hits[i].GetActor()->GetActorLocation(), Center);
@@ -86,48 +84,48 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 			}
 		}
 
-		OtherActor=hits[Closest].GetActor();
+		OtherActor = hits[Closest].GetActor();
 	}
-	
+
 	// Overlapped Actor Cast
-	huchuTong=Cast<AHuchuTong>(OtherActor);
+	huchuTong = Cast<AHuchuTong>(OtherActor);
 	bottle = Cast<ABottleBase>(OtherActor);
 	tablet = Cast<ATablet>(OtherActor);
-	coaster=Cast<ACoaster>(OtherActor);
-	cup=Cast<ACupBase>(OtherActor);
-	barSpoon=Cast<ABarSpoon>(OtherActor);
-	strainer=Cast<AStrainer>(OtherActor);
-	shakerStrainer=Cast<AShakerStrainer>(OtherActor);
-	shakerLid=Cast<AShakerLid>(OtherActor);
-	shaker=Cast<AShaker>(OtherActor);
-	mixingGlass=Cast<AMixingGlass>(OtherActor);
-	iceCube=Cast<AIceCube>(OtherActor);
-	slicedLime=Cast<ASlicedLime>(OtherActor);
-	halfSlicedLime=Cast<AHalfSlicedLime>(OtherActor);
-	cup=Cast<ACupBase>(OtherActor);
-	slicedLimeVat=Cast<ASlicedLimeVat>(OtherActor);
-	halfSlicedLimeVat=Cast<AHalfSlicedLimeVat>(OtherActor);
-	iceCubeVat=Cast<AIceCubeVat>(OtherActor);
-	martiniCup=Cast<AMartiniCup>(OtherActor);
-	rockGlass=Cast<ARockGlass>(OtherActor);
-	SlicedOrange=Cast<ASlicedOrange>(OtherActor);
-	halfSlicedOrange=Cast<AHalfSlicedOrange>(OtherActor);
-	SlicedOrangeVat=Cast<ASlicedOrangeVat>(OtherActor);
-	halfSlicedOrangeVat=Cast<AHalfSlicedOrangeVat>(OtherActor);
-	DrinkCan=Cast<ADrinkCan>(OtherActor);
+	coaster = Cast<ACoaster>(OtherActor);
+	cup = Cast<ACupBase>(OtherActor);
+	barSpoon = Cast<ABarSpoon>(OtherActor);
+	strainer = Cast<AStrainer>(OtherActor);
+	shakerStrainer = Cast<AShakerStrainer>(OtherActor);
+	shakerLid = Cast<AShakerLid>(OtherActor);
+	shaker = Cast<AShaker>(OtherActor);
+	mixingGlass = Cast<AMixingGlass>(OtherActor);
+	iceCube = Cast<AIceCube>(OtherActor);
+	slicedLime = Cast<ASlicedLime>(OtherActor);
+	halfSlicedLime = Cast<AHalfSlicedLime>(OtherActor);
+	cup = Cast<ACupBase>(OtherActor);
+	slicedLimeVat = Cast<ASlicedLimeVat>(OtherActor);
+	halfSlicedLimeVat = Cast<AHalfSlicedLimeVat>(OtherActor);
+	iceCubeVat = Cast<AIceCubeVat>(OtherActor);
+	martiniCup = Cast<AMartiniCup>(OtherActor);
+	rockGlass = Cast<ARockGlass>(OtherActor);
+	SlicedOrange = Cast<ASlicedOrange>(OtherActor);
+	halfSlicedOrange = Cast<AHalfSlicedOrange>(OtherActor);
+	SlicedOrangeVat = Cast<ASlicedOrangeVat>(OtherActor);
+	halfSlicedOrangeVat = Cast<AHalfSlicedOrangeVat>(OtherActor);
+	DrinkCan = Cast<ADrinkCan>(OtherActor);
 
-	if(huchuTong)
-	{			
-		if(PC)
+	if (huchuTong)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT(" Tongs"))));
 		}
@@ -137,23 +135,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
 		}), 1, false);
 	}
-	else if(barSpoon)
-	{	
-		if(PC)
+	else if (barSpoon)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Bar Spoon"))));
 		}
@@ -163,22 +161,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(tablet)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (tablet)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Tablet"))));
 		}
@@ -188,22 +187,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(coaster)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (coaster)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Coaster"))));
 		}
@@ -213,22 +213,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(strainer)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (strainer)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Strainer"))));
 		}
@@ -238,22 +239,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(shakerStrainer)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (shakerStrainer)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Shaker Strainer"))));
 		}
@@ -263,22 +265,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(shakerLid)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (shakerLid)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Shaker Lid"))));
 		}
@@ -288,22 +291,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(shaker)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (shaker)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Shaker"))));
 		}
@@ -313,22 +317,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(mixingGlass)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (mixingGlass)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Mixing Glass"))));
 		}
@@ -338,22 +343,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(iceCube)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (iceCube)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Ice Cube"))));
 		}
@@ -363,22 +369,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(halfSlicedLime)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (halfSlicedLime)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Lime"))));
 		}
@@ -388,22 +395,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(slicedLime)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (slicedLime)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Lime"))));
 		}
@@ -413,22 +421,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(slicedLimeVat)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (slicedLimeVat)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Lime Container"))));
 		}
@@ -438,22 +447,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(halfSlicedLimeVat)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (halfSlicedLimeVat)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Lime Container"))));
 		}
@@ -463,22 +473,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(halfSlicedOrangeVat)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (halfSlicedOrangeVat)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Orange Container"))));
 		}
@@ -488,22 +499,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(SlicedOrangeVat)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (SlicedOrangeVat)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Orange Container"))));
 		}
@@ -513,22 +525,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(SlicedOrange)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (SlicedOrange)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Orange"))));
 		}
@@ -538,22 +551,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(halfSlicedOrange)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (halfSlicedOrange)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Orange"))));
 		}
@@ -563,22 +577,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(iceCubeVat)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (iceCubeVat)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Ice Container"))));
 		}
@@ -588,22 +603,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(martiniCup)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (martiniCup)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Martini Glass"))));
 		}
@@ -613,22 +629,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(rockGlass)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (rockGlass)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Rock Glass"))));
 		}
@@ -638,22 +655,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(cup)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (cup)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Highball Glass"))));
 		}
@@ -663,22 +681,23 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-	else if(DrinkCan)
-	{	
-		if(PC)
+		}), 1, false);
+	}
+	else if (DrinkCan)
+	{
+		if (PC)
 		{
-			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);			
+			PC->PlayHapticEffect(HF_ActorOverlap, EControllerHand::Right);
 		}
 		GetWorldTimerManager().ClearTimer(widgetDestroyHandle);
-		if(actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
+		if (actorInfoWidget->IsAnimationPlaying(actorInfoWidget->Disappearing))
 		{
 			actorInfoWidget->StopAnimation(actorInfoWidget->Disappearing);
 		}
-		if(BarGameInstance&&BarGameInstance->bEnglish==true)
+		if (BarGameInstance && BarGameInstance->bEnglish == true)
 		{
 			actorInfoWidget->ActorInfo->SetText(FText::FromString(FString::Printf(TEXT("Drink Can"))));
 		}
@@ -688,10 +707,9 @@ void AGraspingHandRealistic::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 		actorInfoWidgetComp->SetVisibility(true);
 		actorInfoWidget->PlayAnimation(actorInfoWidget->Appearing);
-		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()->void
+		GetWorldTimerManager().SetTimer(widgetDestroyHandle, FTimerDelegate::CreateLambda([this]()-> void
 		{
 			actorInfoWidget->PlayAnimation(actorInfoWidget->Disappearing);
-		}), 1, false); }
-
-	
+		}), 1, false);
+	}
 }
