@@ -79,12 +79,8 @@ void APlayerCharacter::BeginPlay()
 		if (const auto SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
 		{
 			SubSystem->AddMappingContext(VREInputMappingContext, 0);
-			SubSystem->AddMappingContext(IMC_Hand, 0);
 		}
 	}
-
-	//GetCharacterMovement()->bRequestedMoveUseAcceleration=false;
-	//GetCharacterMovement()->bNetworkSkipProxyPredictionOnNetUpdate=true;
 
 	widgetInteractionComp->bEnableHitTesting = true;
 	widgetInteractionComp->bShowDebug = false;

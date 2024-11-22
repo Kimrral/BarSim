@@ -13,15 +13,11 @@
   <component name="ChangeListManager">
     <list default="true" id="1c888e18-d659-4b33-83f4-437f5be1f042" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BarSim/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BarSim/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vsconfig" beforeDir="false" afterPath="$PROJECT_DIR$/.vsconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/KHJContents/Inputs/IMC_Hands.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/KHJContents/Inputs/IMC_Hands.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/StarterContent/Blueprints/Blueprint_CeilingLight.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StarterContent/Blueprints/Blueprint_CeilingLight.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/StarterContent/HDRI/HDRI_Epic_Courtyard_Daylight.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StarterContent/HDRI/HDRI_Epic_Courtyard_Daylight.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/KHJContents/HandAnimBP/GraspingHandRealistic.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/KHJContents/HandAnimBP/GraspingHandRealistic.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/VRE/Core/Character/BP_VRCharacter.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/VRE/Core/Character/BP_VRCharacter.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/VRE/Input/VREInputConfig.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/VRE/Input/VREInputConfig.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/VRE/Input/VREInputMappingContext.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/VRE/Input/VREInputMappingContext.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BarSim/Private/GraspingHandRealistic.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BarSim/Private/GraspingHandRealistic.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BarSim/Private/PlayerCharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BarSim/Private/PlayerCharacter.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BarSim/Public/GraspingHandRealistic.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BarSim/Public/GraspingHandRealistic.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BarSim/Public/PlayerCharacter.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BarSim/Public/PlayerCharacter.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -258,7 +254,7 @@
       <workItem from="1732245837615" duration="1386000" />
       <workItem from="1732248394088" duration="4674000" />
       <workItem from="1732264893050" duration="1691000" />
-      <workItem from="1732266635261" duration="3150000" />
+      <workItem from="1732266635261" duration="4963000" />
     </task>
     <servers />
   </component>
